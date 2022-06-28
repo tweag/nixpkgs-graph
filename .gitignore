@@ -1,0 +1,4 @@
+# All .txt files
+*.txt
+# All .json files
+*.json
