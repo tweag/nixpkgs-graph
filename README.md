@@ -9,4 +9,4 @@ $ nix search --json nixpkgs > nodes.json
 ```
 
 This allows us to get a list and a brief description of all packages under nixpkgs.
-After that, we can use the `tocsv.py` program to convert the json file into csv format to facilitate the generation of graph nodes.
+After that, we can use the `Tocsv.py` program to convert the json file into csv format to facilitate the generation of graph nodes.
