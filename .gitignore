@@ -1,0 +1,8 @@
+#ignore data files
+
+# All .txt files
+*.txt
+# All .json files
+*.json
+# All .csv files
+*.csv
