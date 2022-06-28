@@ -4,3 +4,5 @@
 *.txt
 # All .json files
 *.json
+# All .csv files
+*.csv
