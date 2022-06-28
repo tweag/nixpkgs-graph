@@ -1,6 +1,2 @@
-# All txt files
-*.txt
-# All json files
-*.json
-# All csv files
-*.csv
+# Ignore the rawdata directory which is used to store large scale raw data
+rawdata/
