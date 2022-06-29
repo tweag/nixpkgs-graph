@@ -1,2 +1,2 @@
 nix search --json nixpkgs >rawdata/nodes.json
-./Tocsv.py
+./node_format_trans.py
