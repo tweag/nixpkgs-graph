@@ -3,7 +3,7 @@
 set -e
 
 # Get raw nodes information
-mkdir rawdata
+mkdir -p rawdata
 nix search --json nixpkgs >rawdata/nodes.json
 
 # Convert nodes.json to csv format
