@@ -1,2 +1,8 @@
 # Ignore the rawdata directory which is used to store large scale raw data
 rawdata/
+
+# Ignore the PR direcroty which is used to store the pull request drafts
+PR/
+
+# Ignore the temp direcroty which is used for temporary tests
+temp/
