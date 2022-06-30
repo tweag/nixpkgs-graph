@@ -1,0 +1,2 @@
+# Ignore the rawdata directory which is used to store large scale raw data
+rawdata/
