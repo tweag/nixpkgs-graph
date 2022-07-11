@@ -98,19 +98,15 @@ The executable files of this project mainly includes `shell` files and `python` 
 
 1.1 Node in nixpkgs
 
-The procedures for generating information about the nodes have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder :
-  ```sh
-    $ /bin/bash build.sh
-  ```
+The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `edges.txt`.
 
-The following is a description of the methods :
+Each line in this file represents a package under `nixpkgs`, and each line contains the following information :
+- name of the package
+- name with version
+- outPath of the package
+- buildInputs of the package
 
-For the first version we use the command `nix search` to find information about all the packages in `nixpkgs` and we output the results in `json` format. This allows us to get a list of pnames and a brief description of all packages under nixpkgs.
-
-After that, we can use the `node_format_trans.py` program to convert the json file into csv format to facilitate the generation of graph nodes. 
-
-1.2 Edge in nixpkgs
-
+So, according to the `edge.txt` file we get all the nodes and edges information at the same time. The method we use here is to iterate through nix builtin function [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) directly over the nixpkgs and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function to output.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
@@ -128,9 +124,9 @@ _For more examples, please refer to the [Documentation](https://example.com)_ --
 
 <!-- ROADMAP -->
 ## Roadmap
-- [ ] Get basic information
+- [x] Get basic information
     - [x] Get node information
-    - [ ] Get edge information
+    - [x] Get edge information
 - [ ] Construct Database
 - [ ] Construct Graph
 - [ ] Analyse
