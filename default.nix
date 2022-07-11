@@ -8,26 +8,28 @@
 with pkgs;
 
 let 
-  lib = pkgs.lib;
+  inherit (pkgs) lib;
+  tryEval = builtins.tryEval;
 
-  concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
-
-  getInfo = lib.mapAttrs (name: value:
+# Here is the function that we use to extract information from one package
+# name : the name of the package (key)
+# value : the information of the package in set form
+# This function takes in a package and returns an attrset 
+  extractInfo = name: value:
     let 
-      res = builtins.tryEval (
-      ''${name}, '' + 
-      ''${if value ? name then value.name else ""}, '' + 
-      ''${if value ? outPath then value.outPath else ""}, '' +
-      ''${if value ? buildInputs then (concatString value.buildInputs) else ""}'');
+        name = (tryEval value.name or "");
+        path = (tryEval value.outPath or "");
+        buildInputs = (tryEval value.buildInputs or []);
     in 
-      if res.success then res.value else ''${name}, , ,''
-    );
+      {
+        name = name.value;
+        path = path.value;
+        buildInputs = buildInputs.value;
+      };
 
-  concatInfo = lib.concatMapStrings (x: x + "\n");
 in rec {
-  inherit pkgs;
-  info = getInfo pkgs;
-  file = concatInfo (pkgs.lib.attrValues info);
-}
 
+  info = (lib.mapAttrs extractInfo) pkgs;
+  info1 = extractInfo ''pkgs'' pkgs.CoinMP; 
+}
 
