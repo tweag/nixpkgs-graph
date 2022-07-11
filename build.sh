@@ -2,9 +2,8 @@
 
 set -e
 
-# Get raw nodes information
+# Create necessary folder
 mkdir -p rawdata
-nix search --json nixpkgs >rawdata/nodes.json
 
-# Convert nodes.json to csv format
-./node_format_trans.py
+# Get all nodes and edges information
+echo -e $(nix-instantiate --eval default.nix -A file) >rawdata/edges.txt
