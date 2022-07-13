@@ -9,7 +9,9 @@ with pkgs;
 
 let 
   inherit (pkgs) lib;
+
   tryEval = builtins.tryEval;
+  concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
 
 # Here is the function that we use to extract information from one package
 # name : the name of the package (key)
@@ -17,19 +19,19 @@ let
 # This function takes in a package and returns an attrset 
   extractInfo = name: value:
     let 
-      res = builtins.tryEval (
-      {
-        name = (tryEval value.name or "");
-        path = (tryEval value.outPath or "");
-        buildInputs = (tryEval value.buildInputs or []);
-      });
+      res = {
+      
+        name = tryEval(if value ? name then value.name else "");
+        path = tryEval(if value ? outPath then value.outPath else "");
+        buildInputs = tryEval(if value ? buildInputs then value.buildInputs else []);
+      };
     in 
-      if res.success then res.value 
-      else {name = name; outPath=""; buildInputs = [];}; 
+       res;
 
 in rec {
 
-  info = (lib.mapAttrs extractInfo) pkgs;
+  info = (builtins.mapAttrs extractInfo) pkgs;
   info1 = extractInfo ''pkgs'' pkgs.dd-agent; 
+  # info1 = (extractInfo ''pkgs'' pkgs.chromium); 
 }
 
