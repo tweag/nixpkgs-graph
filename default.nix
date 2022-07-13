@@ -19,18 +19,17 @@ let
     let 
       res = builtins.tryEval (
       {
-        name = name; 
-        version = if value ? name then value.name else "";
-        path = if value ? outPath then value.outPath else "" ;
-        buildInputs = if value ? buildInputs then value.buildInputs else "";
+        name = (tryEval value.name or "");
+        path = (tryEval value.outPath or "");
+        buildInputs = (tryEval value.buildInputs or []);
       });
     in 
       if res.success then res.value 
-      else {name = name; version = ""; outPath=""; buildInputs = [];}; 
+      else {name = name; outPath=""; buildInputs = [];}; 
 
 in rec {
 
   info = (lib.mapAttrs extractInfo) pkgs;
-  info1 = extractInfo ''pkgs'' pkgs.anbox; 
+  info1 = extractInfo ''pkgs'' pkgs.dd-agent; 
 }
 
