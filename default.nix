@@ -17,19 +17,20 @@ let
 # This function takes in a package and returns an attrset 
   extractInfo = name: value:
     let 
-        name = (tryEval value.name or "");
-        path = (tryEval value.outPath or "");
-        buildInputs = (tryEval value.buildInputs or []);
-    in 
+      res = builtins.tryEval (
       {
-        name = name.value;
-        path = path.value;
-        buildInputs = buildInputs.value;
-      };
+        name = name; 
+        version = if value ? name then value.name else "";
+        path = if value ? outPath then value.outPath else "" ;
+        buildInputs = if value ? buildInputs then value.buildInputs else "";
+      });
+    in 
+      if res.success then res.value 
+      else {name = name; version = ""; outPath=""; buildInputs = [];}; 
 
 in rec {
 
   info = (lib.mapAttrs extractInfo) pkgs;
-  info1 = extractInfo ''pkgs'' pkgs.CoinMP; 
+  info1 = extractInfo ''pkgs'' pkgs.anbox; 
 }
 
