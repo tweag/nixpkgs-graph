@@ -13,25 +13,29 @@ let
   tryEval = builtins.tryEval;
   concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
 
-# Here is the function that we use to extract information from one package
-# name : the name of the package (key)
-# value : the information of the package in set form
-# This function takes in a package and returns an attrset 
+# Here is the function that we use to extract information from one package. This function takes in a package and returns an attrset. 
+# name : the name of the package (key); value : the information of the package in set form
+# Note that variables like buildInputs (set or list) need to be converted to string format first. 
+# Otherwise, you will encounter various types of errors with `nix-instantiate --eval --json --strict`
   extractInfo = name: value:
     let 
       res = {
-      
         name = tryEval(if value ? name then value.name else "");
         path = tryEval(if value ? outPath then value.outPath else "");
-        buildInputs = tryEval(if value ? buildInputs then value.buildInputs else []);
+        buildInputs = tryEval(if value ? buildInputs then concatString value.buildInputs else "");
       };
     in 
-       res;
+      {
+        name = res.name.value;
+        path = res.path.value;
+        buildInputs = res.buildInputs.value;
+      };
 
 in rec {
 
-  info = (builtins.mapAttrs extractInfo) pkgs;
-  info1 = extractInfo ''pkgs'' pkgs.dd-agent; 
-  # info1 = (extractInfo ''pkgs'' pkgs.chromium); 
+  infoTest = extractInfo ''pkgs'' pkgs.dd-agent; 
+
+  info = (lib.mapAttrs extractInfo) pkgs;
+  
 }
 
