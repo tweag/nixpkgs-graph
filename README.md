@@ -101,7 +101,6 @@ The executable files of this project mainly includes `shell` files and `python` 
 The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `edges.json`.
 
 Each name/value pair in the json file represents a package under `nixpkgs`, and it contains the following information :
-- name of the package
 - name with version
 - outPath of the package
 - buildInputs of the package
@@ -110,7 +109,7 @@ Example :
 ```json
 "chromium":{"buildInputs":"/nix/store/jhw4g403w7rl406kaiwgcmjjj7h8452j-gsettings-desktop-schemas-42.0 /nix/store/bzb3nqkb6lmp49f4w49gx8pmxazy7rd1-glib-2.72.2-dev /nix/store/430qg342sichma31bm38p9rc4yi2rbjb-gtk+3-3.24.34-dev /nix/store/rkp90b96jr3xng75kdz603r8wxd0i3mp-adwaita-icon-theme-42.0 ","name":"chromium-103.0.5060.53","path":"/nix/store/67ybgs58kk57gap1lac0w4zz5dwkvkyk-chromium-103.0.5060.53"}
 ```
-So, according to the `edges.json` file we get all the nodes and edges information at the same time. The method we use here is to iterate through nix builtin function [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) directly over the nixpkgs and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function and `--json --strict` attribute of `nix-instantiate` to output.
+So, according to the `edges.json` file we get all the nodes and edges information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function and `--json --strict` attribute of `nix-instantiate` to output.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 

@@ -10,7 +10,7 @@ with pkgs;
 let 
   inherit (pkgs) lib;
 
-  tryEval = builtins.tryEval;
+  inherit (builtins) tryEval;
   concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
 
 # Here is the function that we use to extract information from one package. This function takes in a package and returns an attrset. 
@@ -20,22 +20,14 @@ let
   extractInfo = name: value:
     let 
       res = {
-        name = tryEval(if value ? name then value.name else "");
-        path = tryEval(if value ? outPath then value.outPath else "");
-        buildInputs = tryEval(if value ? buildInputs then concatString value.buildInputs else "");
+        name = (tryEval(if value ? name then value.name else "")).value;
+        path = (tryEval(if value ? outPath then value.outPath else "")).value;
+        buildInputs = (tryEval(if value ? buildInputs then concatString value.buildInputs else "")).value;
       };
     in 
-      {
-        name = res.name.value;
-        path = res.path.value;
-        buildInputs = res.buildInputs.value;
-      };
+      res;
 
 in rec {
-
-  infoTest = extractInfo ''pkgs'' pkgs.dd-agent; 
-
   info = (lib.mapAttrs extractInfo) pkgs;
-  
 }
 
