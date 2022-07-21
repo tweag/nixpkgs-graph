@@ -13,33 +13,39 @@ let
 
   inherit (builtins) tryEval;
   concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
+  evalable = x: (builtins.tryEval x).success;
 
   # Here is the function that we use to extract information from one package. This function takes in a package and returns an attrset. 
   # 
   # @name : the name of the package (key); @value : the information of the package in set form
   # Note that variables like buildInputs (set or list) need to be converted to string format first. 
   # Otherwise, you will encounter various types of errors with `nix-instantiate --eval --json --strict`
-  extractInfo = depth: pathName: lib.mapAttrs (
+  extractInfo = depth: packagePath: lib.mapAttrs (
     name: value:
       let
         res = tryEval
           (
-            if (builtins.typeOf value) == "set" && depth < 2 then
-              extractInfo (depth + 1) ''${pathName}.${name}'' value
-            else
+            if (builtins.typeOf value) == "set" && !(lib.isDerivation value) && depth < 1 then
+              extractInfo (depth + 1) ''${packagePath}.${name}'' value
+            else if (lib.isDerivation value) then
               {
-                inherit depth pathName;
+                type = builtins.typeOf value;
+                inherit depth packagePath;
                 name = (tryEval (if value ? name then value.name else "")).value;
                 path = (tryEval (if value ? outPath then value.outPath else "")).value;
                 buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
               }
+            else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
           );
       in
-      if res.success then res.value else { inherit depth pathName; name = ""; path = ""; buildInputs = ""; }
+      if res.success then res.value else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
   );
 
 in
 rec {
   info = extractInfo 0 "nixpkgs" pkgs;
+  info1 = extractInfo 0 "nixpkgs" {
+    python = pkgs.python3Packages;
+  };
 }
 
