@@ -21,15 +21,21 @@ let
   # Otherwise, you will encounter various types of errors with `nix-instantiate --eval --json --strict`
   extractInfo = depth: pathName: lib.mapAttrs (
     name: value:
-      if (builtins.typeOf value) == "set" then
-        extractInfo (depth + 1) ''${pathName}.${n}'' v
-      else
-        {
-          name = (tryEval (if value ? name then value.name else "")).value;
-          inherit depth pathName;
-          path = (tryEval (if value ? outPath then value.outPath else "")).value;
-          buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
-        }
+      let
+        res = tryEval
+          (
+            if (builtins.typeOf value) == "set" && depth < 2 then
+              extractInfo (depth + 1) ''${pathName}.${name}'' value
+            else
+              {
+                inherit depth pathName;
+                name = (tryEval (if value ? name then value.name else "")).value;
+                path = (tryEval (if value ? outPath then value.outPath else "")).value;
+                buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
+              }
+          );
+      in
+      if res.success then res.value else { inherit depth pathName; name = ""; path = ""; buildInputs = ""; }
   );
 
 in
