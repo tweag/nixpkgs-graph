@@ -1,8 +1,5 @@
 { pkgs ? import
-    (fetchTarball {
-      url = "https://github.com/NixOS/nixpkgs/archive/59b5ae59892ff16075bab39a7d6a9c8509b4055f.tar.gz";
-      sha256 = "0c9yjk5spc8mkq5rqcql6j8mqmlq62299l3cz29pjvgxwazwwpv0";
-    })
+    (fetchTarball https://github.com/NixOS/nixpkgs/archive/nixos-22.05.tar.gz)
     { }
 }:
 
@@ -23,20 +20,35 @@ let
   extractInfo = depth: packagePath: lib.mapAttrs (
     name: value:
       let
-        res = tryEval
-          (
-            if (builtins.typeOf value) == "set" && !(lib.isDerivation value) && depth < 1 then
-              extractInfo (depth + 1) ''${packagePath}.${name}'' value
-            else if (lib.isDerivation value) then
-              {
-                type = builtins.typeOf value;
-                inherit depth packagePath;
-                name = (tryEval (if value ? name then value.name else "")).value;
-                path = (tryEval (if value ? outPath then value.outPath else "")).value;
-                buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
-              }
-            else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
-          );
+        res = tryEval (
+          if lib.isDerivation value then
+            {
+              inherit depth packagePath;
+              name = (tryEval (if value ? name then value.name else "")).value;
+              path = (tryEval (if value ? outPath then value.outPath else "")).value;
+              buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
+            }
+          else if (builtins.typeOf value) == "set" && depth < 1 then
+            extractInfo (depth + 1) ''${packagePath}.${name}'' value
+          else
+            { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
+        );
+      in
+      if res.success then res.value else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
+  );
+
+  extractInfo1 = depth: packagePath: lib.mapAttrs (
+    name: value:
+      let
+        res = tryEval (
+          {
+            deriv = lib.isDerivation value;
+            inherit depth packagePath;
+            name = (tryEval (if value ? name then value.name else "")).value;
+            path = (tryEval (if value ? outPath then value.outPath else "")).value;
+            buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
+          }
+        );
       in
       if res.success then res.value else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
   );
@@ -45,7 +57,7 @@ in
 rec {
   info = extractInfo 0 "nixpkgs" pkgs;
   info1 = extractInfo 0 "nixpkgs" {
-    python = pkgs.python3Packages;
+    python = pkgs.zxcvbn-c;
   };
 }
 
