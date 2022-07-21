@@ -37,22 +37,6 @@ let
       if res.success then res.value else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
   );
 
-  extractInfo1 = depth: packagePath: lib.mapAttrs (
-    name: value:
-      let
-        res = tryEval (
-          {
-            deriv = lib.isDerivation value;
-            inherit depth packagePath;
-            name = (tryEval (if value ? name then value.name else "")).value;
-            path = (tryEval (if value ? outPath then value.outPath else "")).value;
-            buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
-          }
-        );
-      in
-      if res.success then res.value else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
-  );
-
 in
 rec {
   info = extractInfo 0 "nixpkgs" pkgs;
