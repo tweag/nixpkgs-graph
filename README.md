@@ -102,14 +102,29 @@ The procedures for generating information about the nodes and edges have all bee
 
 Each name/value pair in the json file represents a package under `nixpkgs`, and it contains the following information :
 - name with version
-- outPath of the package
+- path to the package in which the derivation is located (like `nixpkgs.python3Package`)
+- depth indicating the level of the current derivation in nixpkgs
 - buildInputs of the package
 
 Example : 
 ```json
-"chromium":{"buildInputs":"/nix/store/jhw4g403w7rl406kaiwgcmjjj7h8452j-gsettings-desktop-schemas-42.0 /nix/store/bzb3nqkb6lmp49f4w49gx8pmxazy7rd1-glib-2.72.2-dev /nix/store/430qg342sichma31bm38p9rc4yi2rbjb-gtk+3-3.24.34-dev /nix/store/rkp90b96jr3xng75kdz603r8wxd0i3mp-adwaita-icon-theme-42.0 ","name":"chromium-103.0.5060.53","path":"/nix/store/67ybgs58kk57gap1lac0w4zz5dwkvkyk-chromium-103.0.5060.53"}
+"chromium": {
+  "buildInputs": "/nix/store/qcyazkxz0nz5i6mldb57088mpahmlc5b-gsettings-desktop-schemas-42.0 /nix/store/jxc7b1vvw2a58vv9pxdigiz9rm63jkxb-glib-2.72.3-dev /nix/store/kjiwqx9803gkkck72fzjs9pwhgf2xyca-gtk+3-3.24.34-dev /nix/store/4mzmx68yw8lkj2vaa25a4856ykiyd2fh-adwaita-icon-theme-42.0 ",
+  "depth": 0,
+  "name": "chromium-103.0.5060.134",
+  "packagePath": "nixpkgs"
+}
 ```
-So, according to the `edges.json` file we get all the nodes and edges information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function and `--json --strict` attribute of `nix-instantiate` to output.
+and another example of depth 1 under `pythonPackages`:
+```json
+"zstd": {
+  "buildInputs": "/nix/store/vakcc74vp08y1rb1rb1cla6885ayklk3-zstd-1.5.2-dev ",
+  "depth": 1,
+  "name": "python2.7-zstd-1.5.1.0",
+  "packagePath": "nixpkgs.pythonPackages"
+}
+```
+So, according to the `edges.json` file we get the node and edge information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function and `--json --strict` attribute of `nix-instantiate` to output.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
