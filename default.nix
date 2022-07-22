@@ -10,7 +10,17 @@ let
 
   inherit (builtins) tryEval;
   concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
-  evalable = x: (builtins.tryEval x).success;
+
+  # Il s'agit d'une liste blanche de paquets utilisés pour la récursion.
+  packages = [
+    "haskellPackages"
+    "javaPackages"
+    "ocamlPackages"
+    "perlPackages"
+    "phpPackages"
+    "pythonPackages"
+    "python3Packages"
+  ];
 
   # Here is the function that we use to extract information from one package. This function takes in a package and returns an attrset. 
   # 
@@ -25,10 +35,10 @@ let
             {
               inherit depth packagePath;
               name = (tryEval (if value ? name then value.name else "")).value;
-              path = (tryEval (if value ? outPath then value.outPath else "")).value;
+              # path = (tryEval (if value ? outPath then value.outPath else "")).value;
               buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
             }
-          else if (builtins.typeOf value) == "set" && depth < 1 then
+          else if ((value.recurseForDerivations or false || value.recurseForRelease or false) || ((builtins.typeOf value) == "set" && builtins.elem name packages && depth < 1)) then
             extractInfo (depth + 1) ''${packagePath}.${name}'' value
           else
             { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
@@ -40,8 +50,5 @@ let
 in
 rec {
   info = extractInfo 0 "nixpkgs" pkgs;
-  info1 = extractInfo 0 "nixpkgs" {
-    python = pkgs.zxcvbn-c;
-  };
 }
 
