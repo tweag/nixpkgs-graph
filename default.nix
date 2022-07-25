@@ -11,14 +11,14 @@ let
   inherit (builtins) tryEval;
   concatString = lib.concatMapStrings (x: (builtins.toString x) + " ");
 
-  # Il s'agit d'une liste blanche de paquets utilisés pour la récursion.
+  # This is a white list of packages used for recursion.
   packages = [
     "haskellPackages"
     "javaPackages"
     "ocamlPackages"
     "perlPackages"
     "phpPackages"
-    "pythonPackages"
+    # "pythonPackages"
     "python3Packages"
   ];
 
@@ -35,7 +35,7 @@ let
             {
               inherit depth packagePath;
               name = (tryEval (if value ? name then value.name else "")).value;
-              # path = (tryEval (if value ? outPath then value.outPath else "")).value;
+              path = (tryEval (if value ? outPath then value.outPath else "")).value;
               buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
             }
           else if ((value.recurseForDerivations or false || value.recurseForRelease or false) || ((builtins.typeOf value) == "set" && builtins.elem name packages && depth < 1)) then
