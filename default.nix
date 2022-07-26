@@ -32,8 +32,10 @@ let
       let
         res = tryEval (
           if lib.isDerivation value then
-            {
-              inherit depth packagePath;
+            rec {
+              pname = (tryEval (if value ? pname then value.pname else "")).value;
+              version = (tryEval (if value ? version then value.version else "")).value;
+              package = packagePath + "." + pname;
               name = (tryEval (if value ? name then value.name else "")).value;
               path = (tryEval (if value ? outPath then value.outPath else "")).value;
               buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
@@ -41,14 +43,17 @@ let
           else if ((value.recurseForDerivations or false || value.recurseForRelease or false) || ((builtins.typeOf value) == "set" && builtins.elem name packages && depth < 1)) then
             extractInfo (depth + 1) ''${packagePath}.${name}'' value
           else
-            { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
+            { inherit packagePath; name = ""; path = ""; buildInputs = ""; }
         );
       in
-      if res.success then res.value else { inherit depth packagePath; name = ""; path = ""; buildInputs = ""; }
+      if res.success then res.value else { inherit packagePath; name = ""; path = ""; buildInputs = ""; }
   );
 
 in
 rec {
   info = extractInfo 0 "nixpkgs" pkgs;
+  info1 = extractInfo 0 "nixpkgs" {
+    python3Packages = pkgs.python3Packages;
+  };
 }
 
