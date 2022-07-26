@@ -6,3 +6,5 @@ PR/
 
 # Ignore the temp direcroty which is used for temporary tests
 temp/
+
+store/
