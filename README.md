@@ -101,28 +101,41 @@ The executable files of this project mainly includes `shell` files and `python` 
 The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `edges.json`.
 
 Each name/value pair in the json file represents a package under `nixpkgs`, and it contains the following information :
-- name with version
-- path to the package in which the derivation is located (like `nixpkgs.python3Package`)
-- depth indicating the level of the current derivation in nixpkgs
+- full name (key) of the package under `nixpkgs`
+- pname
+- version
+- path to which the package belongs (like `[ nixpkgs python3Package ]`)
+- outPath of the package in `/nix/store/` 
 - buildInputs of the package
 
 Example : 
 ```json
 "chromium": {
-  "buildInputs": "/nix/store/qcyazkxz0nz5i6mldb57088mpahmlc5b-gsettings-desktop-schemas-42.0 /nix/store/jxc7b1vvw2a58vv9pxdigiz9rm63jkxb-glib-2.72.3-dev /nix/store/kjiwqx9803gkkck72fzjs9pwhgf2xyca-gtk+3-3.24.34-dev /nix/store/4mzmx68yw8lkj2vaa25a4856ykiyd2fh-adwaita-icon-theme-42.0 ",
-  "depth": 0,
+  "buildInputs": "/nix/store/c1pzk30ksbff1x3krxnqzrzzfjazsy3l-gsettings-desktop-schemas-42.0 /nix/store/mmwc0xqwxz2s4j35w7wd329hajzfy2f1-glib-2.72.3-dev /nix/store/64mp60apx1klb14l0205562qsk1nlk39-gtk+3-3.24.34-dev /nix/store/6hdwxlycxjgh8y55gb77i8yqglmfaxkp-adwaita-icon-theme-42.0 ",
   "name": "chromium-103.0.5060.134",
-  "packagePath": "nixpkgs"
+  "package": [
+    "nixpkgs",
+    "chromium"
+  ],
+  "path": "/nix/store/vm07va5qg818amk22ifsxivf2c5nc5hr-chromium-103.0.5060.134",
+  "pname": "chromium",
+  "version": "103.0.5060.134"
 }
 ```
-and another example of depth 1 under `pythonPackages`:
+and another example of depth 1 under `python3Packages`:
 ```json
 "zstd": {
-  "buildInputs": "/nix/store/vakcc74vp08y1rb1rb1cla6885ayklk3-zstd-1.5.2-dev ",
-  "depth": 1,
-  "name": "python2.7-zstd-1.5.1.0",
-  "packagePath": "nixpkgs.pythonPackages"
-}
+    "buildInputs": "/nix/store/vakcc74vp08y1rb1rb1cla6885ayklk3-zstd-1.5.2-dev ",
+    "name": "python3.9-zstd-1.5.1.0",
+    "package": [
+      "nixpkgs",
+      "python3Packages",
+      "zstd"
+    ],
+    "path": "/nix/store/0n7ah0rijklnd1m4y8pdnjp0374azyl8-python3.9-zstd-1.5.1.0",
+    "pname": "zstd",
+    "version": "1.5.1.0"
+  }
 ```
 So, according to the `edges.json` file we get the node and edge information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function and `--json --strict` attribute of `nix-instantiate` to output.
 <p align="right">(<a href="#top">back to top</a>)</p>
