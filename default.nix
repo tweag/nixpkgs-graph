@@ -33,6 +33,7 @@ let
         res = tryEval (
           if lib.isDerivation value then
             rec {
+              type = "node";
               pname = (tryEval (if value ? pname then value.pname else "")).value;
               version = (tryEval (if value ? version then value.version else "")).value;
               package = packagePath ++ [ pname ];
@@ -43,30 +44,15 @@ let
           else if ((value.recurseForDerivations or false || value.recurseForRelease or false) || ((builtins.typeOf value) == "set" && builtins.elem name packages && depth < 1)) then
             extractInfo (depth + 1) (packagePath ++ [ name ]) value
           else
-            rec {
-              inherit name;
-              pname = "";
-              version = "";
-              package = packagePath ++ [ name ];
-              path = "";
-              buildInputs = "";
-            }
+            null
         );
       in
       if res.success then res.value
       else
-        rec {
-          inherit name;
-          pname = "";
-          version = "";
-          package = packagePath ++ [ name ];
-          path = "";
-          buildInputs = "";
-        }
+        null
   );
 
 in
 rec {
-  info = extractInfo 0 [ "nixpkgs" ] pkgs;
+  info = lib.collect (x: (x.type or null) == "node") (extractInfo 0 [ "nixpkgs" ] pkgs);
 }
-
