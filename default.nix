@@ -27,44 +27,32 @@ let
   # Note that variables like buildInputs (set or list) need to be converted to string format first. 
   # Otherwise, you will encounter various types of errors with `nix-instantiate --eval --json --strict`
   # We can use lib.strings.splitString to convert the long string into list but nix is not efficient enough.
-  extractInfo = depth: packagePath: name: value:
-    let
-      valueEvalResult = tryEval value;
-      package = packagePath ++ [ name ];
-    in
-    if valueEvalResult.success then
+  extractInfo = depth: packagePath: lib.mapAttrs (
+    name: value:
       let
-        okValue = valueEvalResult.value;
+        res = tryEval (
+          if lib.isDerivation value then
+            rec {
+              type = "node";
+              pname = (tryEval (if value ? pname then value.pname else "")).value;
+              version = (tryEval (if value ? version then value.version else "")).value;
+              package = packagePath ++ [ pname ];
+              name = (tryEval (if value ? name then value.name else "")).value;
+              path = (tryEval (if value ? outPath then value.outPath else "")).value;
+              buildInputs = (tryEval (if value ? buildInputs then concatString value.buildInputs else "")).value;
+            }
+          else if ((value.recurseForDerivations or false || value.recurseForRelease or false) || ((builtins.typeOf value) == "set" && builtins.elem name packages && depth < 1)) then
+            extractInfo (depth + 1) (packagePath ++ [ name ]) value
+          else
+            null
+        );
       in
-      if lib.isDerivation okValue then
-        {
-          type = "node";
-          inherit package;
-          pname = (tryEval (if okValue ? pname then okValue.pname else "")).value;
-          version = (tryEval (if okValue ? version then okValue.version else "")).value;
-          name = (tryEval (if okValue ? name then okValue.name else "")).value;
-          outputPath =
-            let pEvalResult = tryEval (toString okValue);
-            in if pEvalResult.success then pEvalResult.value else null;
-          buildInputs = map
-            (p:
-              let pEvalResult = tryEval (toString p);
-              in if pEvalResult.success then pEvalResult.value else null)
-            (okValue.buildInputs or [ ]);
-        }
-      else if ((okValue.recurseForDerivations or false || okValue.recurseForRelease or false)
-        || (lib.isAttrs okValue && builtins.elem name packages && depth < 1)) then
-        lib.mapAttrs (extractInfo (depth + 1) (package)) okValue
+      if res.success then res.value
       else
         null
-    else
-      null;
+  );
+
 in
 rec {
-  info = lib.collect (x: (x.type or null) == "node") (lib.mapAttrs (extractInfo 0 [ ]) pkgs);
-  info1 = lib.collect (x: (x.type or null) == "node") (lib.mapAttrs (extractInfo 0 [ ]) {
-    python3Packages = pkgs.python3Packages;
-    chromium = pkgs.chromium;
-  });
+  info = lib.collect (x: (x.type or null) == "node") (extractInfo 0 [ "nixpkgs" ] pkgs);
 }
-

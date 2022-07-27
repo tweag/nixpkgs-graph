@@ -107,10 +107,11 @@ Each name/value pair in the json file represents a package under `nixpkgs`, and 
 - path to which the package belongs (like `[ nixpkgs python3Package ]`)
 - outPath of the package in `/nix/store/` 
 - buildInputs of the package
+- `type = "node"` which is used as an identification marker for lib.collect
 
 Example : 
 ```json
-"chromium": {
+{
   "buildInputs": "/nix/store/c1pzk30ksbff1x3krxnqzrzzfjazsy3l-gsettings-desktop-schemas-42.0 /nix/store/mmwc0xqwxz2s4j35w7wd329hajzfy2f1-glib-2.72.3-dev /nix/store/64mp60apx1klb14l0205562qsk1nlk39-gtk+3-3.24.34-dev /nix/store/6hdwxlycxjgh8y55gb77i8yqglmfaxkp-adwaita-icon-theme-42.0 ",
   "name": "chromium-103.0.5060.134",
   "package": [
@@ -119,12 +120,13 @@ Example :
   ],
   "path": "/nix/store/vm07va5qg818amk22ifsxivf2c5nc5hr-chromium-103.0.5060.134",
   "pname": "chromium",
+  "type":"node",
   "version": "103.0.5060.134"
 }
 ```
 and another example of depth 1 under `python3Packages`:
 ```json
-"zstd": {
+{
     "buildInputs": "/nix/store/vakcc74vp08y1rb1rb1cla6885ayklk3-zstd-1.5.2-dev ",
     "name": "python3.9-zstd-1.5.1.0",
     "package": [
@@ -134,10 +136,11 @@ and another example of depth 1 under `python3Packages`:
     ],
     "path": "/nix/store/0n7ah0rijklnd1m4y8pdnjp0374azyl8-python3.9-zstd-1.5.1.0",
     "pname": "zstd",
+    "type":"node",
     "version": "1.5.1.0"
   }
 ```
-So, according to the `edges.json` file we get the node and edge information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the final information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function and `--json --strict` attribute of `nix-instantiate` to output.
+So, according to the `edges.json` file we get the node and edge information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the `buildInputs` information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function. Afterwards, we retrieve the desired set via [lib.collect](https://teu5us.github.io/nix-lib.html#lib.attrsets.collect) to eliminate different levels (e.g. the two examples above are at different levels in the original data `{chromium:{...}, python3Packages:{..., zstd:{...}, ...}}`). Finally we use `--json --strict` attribute of `nix-instantiate` to output.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 
