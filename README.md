@@ -96,10 +96,10 @@ The executable files of this project mainly includes `shell` files and `python` 
 
 **1. Generate Database**
 
-The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `edges.json`.
+The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `nodes.json`.
 
 Each name/value pair in the json file represents a package under `nixpkgs`, and it contains the following information :
-- `Id`: full name with version of the package under `nixpkgs`, 
+- `id`: full name with version of the package under `nixpkgs`, 
 - `pname`
 - `version`
 - `package` : path to which the package belongs (like `[ nixpkgs python3Package ]`)
@@ -110,7 +110,7 @@ Example :
 ```json
 {
   "buildInputs": "/nix/store/c1pzk30ksbff1x3krxnqzrzzfjazsy3l-gsettings-desktop-schemas-42.0 /nix/store/mmwc0xqwxz2s4j35w7wd329hajzfy2f1-glib-2.72.3-dev /nix/store/64mp60apx1klb14l0205562qsk1nlk39-gtk+3-3.24.34-dev /nix/store/6hdwxlycxjgh8y55gb77i8yqglmfaxkp-adwaita-icon-theme-42.0 ",
-  "Id": "chromium-103.0.5060.134",
+  "id": "chromium-103.0.5060.134",
   "package": [
     "nixpkgs",
     "chromium"
@@ -124,7 +124,7 @@ and another example of depth 1 under `python3Packages`:
 ```json
 {
     "buildInputs": "/nix/store/vakcc74vp08y1rb1rb1cla6885ayklk3-zstd-1.5.2-dev ",
-    "Id": "python3.9-zstd-1.5.1.0",
+    "id": "python3.9-zstd-1.5.1.0",
     "package": [
       "nixpkgs",
       "python3Packages",
@@ -135,12 +135,12 @@ and another example of depth 1 under `python3Packages`:
     "version": "1.5.1.0"
   }
 ```
-So, according to the `edges.json` file we get the node and edge information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the `buildInputs` information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function. Afterwards, we retrieve the desired set via [lib.collect](https://teu5us.github.io/nix-lib.html#lib.attrsets.collect) to eliminate different levels (e.g. the two examples above are at different levels in the original data `{chromium:{...}, python3Packages:{..., zstd:{...}, ...}}`). Finally we use `--json --strict` attribute of `nix-instantiate` to output.
+So, according to the `nodes.json` file we get the node and edge information at the same time. The method we use here is to  iterate on the attributes of the root attribute set of nixpkgs using [mapAttrs](https://nixos.org/manual/nix/stable/expressions/builtins.html#builtins-mapAttrs) and merge the `buildInputs` information obtained with the [concatMapStrings](http://ryantm.github.io/nixpkgs/functions/library/strings/) function. Afterwards, we retrieve the desired set via [lib.collect](https://teu5us.github.io/nix-lib.html#lib.attrsets.collect) to eliminate different levels (e.g. the two examples above are at different levels in the original data `{chromium:{...}, python3Packages:{..., zstd:{...}, ...}}`). Finally we use `--json --strict` attribute of `nix-instantiate` to output.
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 **2. Generate Graph**
 
-The procedures for generating graph have also been integrated into the `build.sh` file. The corresponding files will appear in the rawdata/ folder which are named `First graph.png` & `edges.csv`.
+The procedures for generating graph have also been integrated into the `build.sh` file. The corresponding files will appear in the rawdata/ folder which are named `first_graph.png` & `nodes.csv`.
 
 For the first version of the graph, we used [pandas](https://pandas.pydata.org/) of python to process the json format data, and [networkx](https://networkx.org/) to build the graph. The entire program is contained in the `graph.py` file, and the corresponding `requirements.txt` file is provided. However, the python file will be run via `nix-shell`, so there is no need to use the user's native python interpreter. And there is no requirement for user's python environment.
 
@@ -148,16 +148,16 @@ The `graph.py` file contains the following steps:
 
 1. Pre-processing of data:
     - Use `pandas` to read the json file, remove duplicate items and reorder the columns.  
-    - Split `buildInputs` (one single string) and extract the `Id` part from each buildInput.
+    - Split `buildInputs` (one single string) and extract the `id` part from each buildInput.
     - Add `group` attribute (int) to each node according to their `package` path. For example: the group of a package directly under `nixpkgs` is 1, the one under `python3Package` could be 2.
 
 2. Add nodes:
       
-      Add all nodes to the graph (including `Id`, `pname`,`version`, `group`).
+      Add all nodes to the graph (including `id`, `pname`,`version`, `group`).
 
 3. Add edges:
       
-      Iterate through all the data read by `pandas` row by row. Set `row.Id` as `source` and each `row.buildInput` as `target` and add all such edges into graph.
+      Iterate through all the data read by `pandas` row by row. Set `row.id` as `source` and each `row.buildInput` as `target` and add all such edges into graph.
 
 4. Complete data:
 

@@ -1,12 +1,9 @@
-#!/usr/bin/env nix-shell
-#!nix-shell -i python3 -p "python3.withPackages(ps: [ ps.matplotlib ps.networkx ps.pandas ps.scipy])"
-
 import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 # we will also need scipy because it's used by networkx
 
-filePath = "./rawdata/edges.json"
+filePath = "./rawdata/nodes.json"
 
 
 class Graph:
@@ -45,11 +42,11 @@ class Graph:
 data = pd.read_json(filePath)
 
 # Remove repeated nodes
-data.drop_duplicates(subset=["Id", "pname", "version"], keep='first',
+data.drop_duplicates(subset=["id", "pname", "version"], keep='first',
                      inplace=True, ignore_index=True)
 
 # Change the order of the columns
-order = ["Id", "pname", "version", "package", "buildInputs"]
+order = ["id", "pname", "version", "package", "buildInputs"]
 data = data[order]
 
 
@@ -106,7 +103,7 @@ g = Graph()
 
 
 def addNode(x):
-    g.nxG.add_node(x.Id, pname=x.pname, version=x.version, group=x.group)
+    g.nxG.add_node(x.id, pname=x.pname, version=x.version, group=x.group)
 
 
 data.apply(addNode, axis=1)  # axis = 1 means we do it row by row
@@ -115,7 +112,7 @@ data.apply(addNode, axis=1)  # axis = 1 means we do it row by row
 # 3. Add edges
 
 def addEdge(x):
-    source = x.Id
+    source = x.id
     for target in x.buildInputs:
         g.addEdge(source, target)
 
@@ -137,9 +134,9 @@ for node, attrs in g.nxG.nodes(data=True):
 print("number of nodes:", g.nxG.number_of_nodes())
 print("number of edges:", g.nxG.number_of_edges())
 
-g.show(xlabel="x", ylabel="y", title="First graph",
+g.show(xlabel="x", ylabel="y", title="first_graph",
        arrows=False, node_size=0.1, edge_width=0.01)
 
 
 # 6. Final output
-data.to_csv("./rawdata/edges.csv")
+data.to_csv("./rawdata/nodes.csv")

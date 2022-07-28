@@ -8,3 +8,9 @@ PR/
 temp/
 
 store/
+
+# Ignore the vscode setting
+.vscode/
+
+# Ignore the pyproject related files
+dist/
