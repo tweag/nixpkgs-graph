@@ -20,12 +20,14 @@ class Graph:
 
     def show(self, xlabel, ylabel, title, arrows, node_size, edge_width):
 
-        self.pos = nx.spring_layout(self.nxG)
-        # self.pos = nx.random_layout(self.nxG)
+        # self.pos = nx.spring_layout(self.nxG)
+        self.pos = nx.random_layout(self.nxG)
 
         self.label = [g.nxG.nodes[node]["group"] for node in g.nxG]
 
-        plt.figure()
+        # width then length, unit: 100 pixels
+        plt.figure(figsize=(10, 10), dpi=300)
+
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.title(title)
@@ -40,16 +42,15 @@ class Graph:
 # 1. Pre-processing of data
 
 # Read json file
-data = pd.read_json(filePath).head(10000)
+data = pd.read_json(filePath)
 
 # Remove repeated nodes
-data.drop_duplicates(subset=["name", "pname", "version"], keep='first',
+data.drop_duplicates(subset=["Id", "pname", "version"], keep='first',
                      inplace=True, ignore_index=True)
 
 # Change the order of the columns
-order = ["name", "pname", "version", "package", "buildInputs"]
+order = ["Id", "pname", "version", "package", "buildInputs"]
 data = data[order]
-data.rename(columns={"name": "Id"}, inplace=True)
 
 
 def splitBuild(x):
@@ -105,7 +106,7 @@ g = Graph()
 
 
 def addNode(x):
-    g.nxG.add_node(x.Id, group=x.group)
+    g.nxG.add_node(x.Id, pname=x.pname, version=x.version, group=x.group)
 
 
 data.apply(addNode, axis=1)  # axis = 1 means we do it row by row
@@ -122,7 +123,7 @@ def addEdge(x):
 data.apply(addEdge, axis=1)
 
 
-# 4 Complete the "group" data
+# 4 Complete data
 
 # Since we have not evaluated all the nodes successfully, all the targets involved in some edges are not in the node list.
 # But they are still added to the graph, so we need to add group attribute for them.
