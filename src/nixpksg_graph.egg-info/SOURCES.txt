@@ -1,9 +1,0 @@
-LICENSE
-README.md
-pyproject.toml
-src/graph_eloi_wang/__init__.py
-src/graph_eloi_wang/graph.py
-src/nixpksg_graph.egg-info/PKG-INFO
-src/nixpksg_graph.egg-info/SOURCES.txt
-src/nixpksg_graph.egg-info/dependency_links.txt
-src/nixpksg_graph.egg-info/top_level.txt
