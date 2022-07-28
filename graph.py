@@ -15,23 +15,16 @@ class Graph:
         self.nxG = nx.DiGraph()  # Directed Graph
         self.label = []
 
-    def addNode(self, i):
-        self.nxG.add_node(i)
-
-    def addNodeL(self, i, label):
-        self.nxG.add_node(i)
-        self.label.append(label)
-
     def addEdge(self, i, j):
         self.nxG.add_edge(i, j)
 
     def show(self, xlabel, ylabel, title, arrows, node_size, edge_width):
 
-        # self.pos = nx.spring_layout(self.nxG)
-        self.pos = nx.random_layout(self.nxG)
+        self.pos = nx.spring_layout(self.nxG)
+        # self.pos = nx.random_layout(self.nxG)
 
-        if len(self.label) == 0:
-            self.label = [0 for i in range(0, len(self.nxG.nodes))]
+        self.label = [g.nxG.nodes[node]["group"] for node in g.nxG]
+
         plt.figure()
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
@@ -43,19 +36,24 @@ class Graph:
         plt.savefig("./rawdata/" + title + ".png")
         # plt.show()
 
+
 # 1. Pre-processing of data
 
+# Read json file
+data = pd.read_json(filePath).head(10000)
 
-data = pd.read_json(filePath)
+# Remove repeated nodes
+data.drop_duplicates(subset=["name", "pname", "version"], keep='first',
+                     inplace=True, ignore_index=True)
 
 # Change the order of the columns
 order = ["name", "pname", "version", "package", "buildInputs"]
 data = data[order]
+data.rename(columns={"name": "Id"}, inplace=True)
 
 
-# The splitBuild function is used to cut the buildInputs and extract the package name from the full address with a hash string.
 def splitBuild(x):
-
+    # The splitBuild function is used to cut the buildInputs and extract the package name from the full address with a hash string.
     # Some packages fails to evaluate their buildInputs so we may get "False".
     if type(x) == bool:
         return []
@@ -77,7 +75,7 @@ def splitBuild(x):
 data["buildInputs"] = data.buildInputs.apply(splitBuild)
 
 
-# the dict for package sets like python3Packages, we will use it for color
+# The dict for package sets like python3Packages, we will use it for color
 packages = {"nixpkgs"}
 
 
@@ -91,14 +89,14 @@ data.package.apply(getPackages)
 packages = list(packages)
 
 
-def colorPackages(x):
+def setGroup(x):
     if len(x) <= 2:
         return 1
     else:
-        return packages.index(x[1])+1
+        return packages.index(x[1]) + 1
 
 
-data["group"] = data.package.apply(colorPackages)
+data["group"] = data.package.apply(setGroup)
 
 
 # 2. Add nodes
@@ -107,18 +105,16 @@ g = Graph()
 
 
 def addNode(x):
-    # For now we can't use x.group as label because somes edges will refer to somes points without color
-    g.addNode(x.name)
+    g.nxG.add_node(x.Id, group=x.group)
 
 
 data.apply(addNode, axis=1)  # axis = 1 means we do it row by row
-# print(len(g.nxG))
 
 
 # 3. Add edges
 
 def addEdge(x):
-    source = x.name
+    source = x.Id
     for target in x.buildInputs:
         g.addEdge(source, target)
 
@@ -126,12 +122,23 @@ def addEdge(x):
 data.apply(addEdge, axis=1)
 
 
-# 4. Show graph
+# 4 Complete the "group" data
+
+# Since we have not evaluated all the nodes successfully, all the targets involved in some edges are not in the node list.
+# But they are still added to the graph, so we need to add group attribute for them.
+for node, attrs in g.nxG.nodes(data=True):
+    if "group" not in attrs:
+        g.nxG.add_node(node, group=0)
+
+
+# 5. Show graph
+
+print("number of nodes:", g.nxG.number_of_nodes())
+print("number of edges:", g.nxG.number_of_edges())
 
 g.show(xlabel="x", ylabel="y", title="First graph",
-       arrows=False, node_size=0.1, edge_width=0.03)
+       arrows=False, node_size=0.1, edge_width=0.01)
 
-print(data)
 
-# 5. Final output
+# 6. Final output
 data.to_csv("./rawdata/edges.csv")
