@@ -5,12 +5,12 @@ rawdata/
 PR/
 
 # Ignore the temp direcroty which is used for temporary tests
-temp/
-
-store/
+tmp/
 
 # Ignore the vscode setting
 .vscode/
 
 # Ignore the pyproject related files
 dist/
+.pytest_cache/
+./src/graph_eloi_wang/__pycache__

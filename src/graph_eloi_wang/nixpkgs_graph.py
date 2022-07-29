@@ -1,9 +1,10 @@
 import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
+import os
 # we will also need scipy because it's used by networkx
 
-filePath = "./rawdata/nodes.json"
+filePath = os.getcwd() + "/rawdata/nodes.json"
 
 
 class Graph:

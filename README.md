@@ -142,9 +142,9 @@ So, according to the `nodes.json` file we get the node and edge information at t
 
 The procedures for generating graph have also been integrated into the `build.sh` file. The corresponding files will appear in the rawdata/ folder which are named `first_graph.png` & `nodes.csv`.
 
-For the first version of the graph, we used [pandas](https://pandas.pydata.org/) of python to process the json format data, and [networkx](https://networkx.org/) to build the graph. The entire program is contained in the `graph.py` file, and the corresponding `requirements.txt` file is provided. However, the python file will be run via `nix-shell`, so there is no need to use the user's native python interpreter. And there is no requirement for user's python environment.
+For the first version of the graph, we used [pandas](https://pandas.pydata.org/) of python to process the json format data, and [networkx](https://networkx.org/) to build the graph. The entire program is contained in the `nixpkgs_nixpkgs_graph.py` file, and the corresponding `requirements.txt` file is provided. However, the python file will be run via `nix-shell` using the virtual environment `.venv`, so there is no need to use the user's native python interpreter. And there is no requirement for user's python environment.
 
-The `graph.py` file contains the following steps:
+The `nixpkgs_graph.py` file contains the following steps:
 
 1. Pre-processing of data:
     - Use `pandas` to read the json file, remove duplicate items and reorder the columns.  
