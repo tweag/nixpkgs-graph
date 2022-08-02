@@ -8,6 +8,7 @@ let
       networkx
       pandas
       scipy
+      numpy
       setuptools
       # other python packages needed here
     ]);
