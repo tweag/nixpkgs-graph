@@ -2,13 +2,13 @@ import matplotlib.pyplot as plt
 import networkx as nx
 import pandas as pd
 import os
+
 # we will also need scipy because it's used by networkx
 
 filePath = os.getcwd() + "/rawdata/nodes.json"
 
 
 class Graph:
-
     def __init__(self):
         self.nxG = nx.DiGraph()  # Directed Graph
         self.label = []
@@ -29,10 +29,14 @@ class Graph:
         plt.xlabel(xlabel)
         plt.ylabel(ylabel)
         plt.title(title)
-        nx.draw_networkx_nodes(self.nxG, pos=self.pos, node_size=node_size, node_color=self.label,
-                               cmap=plt.get_cmap("viridis"))
-        nx.draw_networkx_edges(self.nxG, pos=self.pos,
-                               arrows=arrows, width=edge_width)
+        nx.draw_networkx_nodes(
+            self.nxG,
+            pos=self.pos,
+            node_size=node_size,
+            node_color=self.label,
+            cmap=plt.get_cmap("viridis"),
+        )
+        nx.draw_networkx_edges(self.nxG, pos=self.pos, arrows=arrows, width=edge_width)
         plt.savefig("./rawdata/" + title + ".png")
         # plt.show()
 
@@ -43,8 +47,9 @@ class Graph:
 data = pd.read_json(filePath)
 
 # Remove repeated nodes
-data.drop_duplicates(subset=["id", "pname", "version"], keep='first',
-                     inplace=True, ignore_index=True)
+data.drop_duplicates(
+    subset=["id", "pname", "version"], keep="first", inplace=True, ignore_index=True
+)
 
 # Change the order of the columns
 order = ["id", "pname", "version", "package", "buildInputs"]
@@ -65,7 +70,7 @@ def splitBuild(x):
     res = []
     for input in list:
         if input[-4:] == "-dev":
-            res.append(input[44: -4])
+            res.append(input[44:-4])
         else:
             res.append(input[44:])
     return res
@@ -112,6 +117,7 @@ data.apply(addNode, axis=1)  # axis = 1 means we do it row by row
 
 # 3. Add edges
 
+
 def addEdge(x):
     source = x.id
     for target in x.buildInputs:
@@ -135,8 +141,14 @@ for node, attrs in g.nxG.nodes(data=True):
 print("number of nodes:", g.nxG.number_of_nodes())
 print("number of edges:", g.nxG.number_of_edges())
 
-g.show(xlabel="x", ylabel="y", title="first_graph",
-       arrows=False, node_size=0.1, edge_width=0.01)
+g.show(
+    xlabel="x",
+    ylabel="y",
+    title="first_graph",
+    arrows=False,
+    node_size=0.1,
+    edge_width=0.01,
+)
 
 
 # 6. Final output
