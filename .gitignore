@@ -12,6 +12,9 @@ tmp/
 
 # Ignore the pyproject related files：
 
+# Black Formatter
+.github/
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
