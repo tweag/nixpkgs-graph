@@ -9,6 +9,7 @@ let
       pandas
       scipy
       numpy
+      click
       setuptools
       # other python packages needed here
     ]);

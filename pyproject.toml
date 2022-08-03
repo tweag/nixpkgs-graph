@@ -14,7 +14,7 @@ maintainers = [
 description = "A nixpkgs content database with graph building"
 readme = "README.md"
 license = { file="LICENSE" }
-# requires-python = ">=3.8"
+requires-python = ">=3.8"
 classifiers = [
     "Programming Language :: Python :: 3",
     "License :: OSI Approved :: MIT License",
