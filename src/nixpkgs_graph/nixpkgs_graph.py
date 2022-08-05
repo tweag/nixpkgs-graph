@@ -10,28 +10,54 @@ def graph(file_read_path, file_save_path, title, arrows, node_size, edge_width):
     Pre-process the data, add node information, add edge information, complete the data, build a graph and output the final result in csv format.
 
     Args:
-    file_read_path: The path to read the json file of node information, default is './rawdata/nodes.json'.
-    file_save_path: The folder path used to store the graph picture, ending with /, default is be './rawdata/'.
-    title: Title of the graph picture.
-    arrows: If True, draw arrowheads with FancyArrowPatches (bendable and stylish). If False, draw edges using LineCollection (linear and fast).
-    node_size: Size of node.
-    edge_width: Width of edge.
+        file_read_path: The path to read the json file of node information, default is './rawdata/nodes.json'.
+        file_save_path: The folder path used to store the graph picture, ending with /, default is be './rawdata/'.
+        title: Title of the graph picture.
+        arrows: If True, draw arrowheads with FancyArrowPatches (bendable and stylish). If False, draw edges using LineCollection (linear and fast).
+        node_size: Size of node.
+        edge_width: Width of edge.
     """
-
     # Read json file
     data = pd.read_json(file_read_path)
+
     # Create Graph
     nxG = nx.DiGraph()
 
-    data = preProcess(data)
-    addNodes(data, nxG)
-    addEdges(data, nxG)
-    completeData(nxG)
-    showGraph(nxG, title, arrows, node_size, edge_width, file_save_path)
-    toCsv(data, file_save_path)
+    # Preprocess data
+    data = pre_process(data)
+
+    # Generates the group and group_id attribute.
+    # The group assignment is based on the package to which the derivation belongs, like python3Packages.
+    data["group"] = data["package"].map(lambda x: x[1] if len(x) >= 3 else np.nan)
+    data["group_id"] = data["group"].map(data["group"].unique().tolist().index)
+
+    # Add nodes
+    for index, row in data.iterrows():
+        nxG.add_node(
+            row["id"],
+            pname=row["pname"],
+            version=row["version"],
+            group=row["group"],
+            group_id=row["group_id"],
+        )
+
+    # Add edges
+    for index, row in data.iterrows():
+        for target in row["buildInputs"]:
+            nxG.add_edge(row["id"], target)
+
+    # Complete data
+    # Since we have not evaluated all the nodes successfully, all the targets involved in some edges are not in the node list. But they are still added to the graph, so we need to add group attribute for them.
+    for node, attrs in nxG.nodes(data=True):
+        if "group_id" not in attrs:
+            nxG.add_node(node, group_id=0)
+
+    show_graph(nxG, file_save_path, title, arrows, node_size, edge_width)
+
+    data.to_csv(file_save_path + "nodes.csv")
 
 
-def preProcess(data):
+def pre_process(data: pd.DataFrame):
     """Preprocesses the data, including removing duplicates, modifying the order of columns and splitting buildInputs, and generating group attributes."""
 
     # Remove repeated nodes
@@ -45,73 +71,26 @@ def preProcess(data):
 
     # Split buildInputs
     df = data.copy()
-    df["buildInputs"] = df["buildInputs"].apply(splitBuild)
+    df["buildInputs"] = df["buildInputs"].apply(split_build)
 
-    # Generat group attribute
-    generateGroup(df)
     return df
 
 
-def splitBuild(x):
+def split_build(x: str):
     """Cuts the buildInputs and extract the package name from the full address with a hash string."""
 
     # Some packages fails to evaluate their buildInputs so we may get "False".
     if type(x) == bool:
         return []
 
-    list = x.split(" ")
-
-    # The last one is always " ", so we need to remove it
-    del list[-1]
-
-    res = []
-    for input in list:
-        if input[-4:] == "-dev":
-            res.append(input[44:-4])
-        else:
-            res.append(input[44:])
+    builds = x.strip().split(" ")
+    # In order to extract the 'id' part from the 'buildInputs', the hash string part needs to be removed first (so start at 44).
+    # Also part of derivations ends with "-dev", which also needs to be removed.
+    res = [input[44:-4] if input.endswith("-dev") else input[44:] for input in builds]
     return res
 
 
-def generateGroup(data):
-    """Generates the group and group_id attribute based on the package to which the derivation belongs, like python3Packages."""
-    data["group"] = data["package"].map(lambda x: x[1] if len(x) >= 3 else np.nan)
-    data["group_id"] = data["group"].map(data["group"].unique().tolist().index)
-
-
-def addNodes(data, nxG):
-    data.apply(addNode, nxG=nxG, axis=1)  # axis = 1 means we do it row by row
-
-
-def addNode(x, nxG):
-    nxG.add_node(
-        x.id, pname=x.pname, version=x.version, group=x.group, group_id=x.group_id
-    )
-
-
-def addEdges(data, nxG):
-    data.apply(addEdge, nxG=nxG, axis=1)
-
-
-def addEdge(x, nxG):
-    source = x.id
-    for target in x.buildInputs:
-        nxG.add_edge(source, target)
-
-
-def completeData(nxG):
-    """
-    Adds some missing data.
-
-    Since we have not evaluated all the nodes successfully, all the targets involved in some edges are not in the node list. But they are still added to the graph, so we need to add group attribute for them.
-    """
-
-    for node, attrs in nxG.nodes(data=True):
-        if "group_id" not in attrs:
-            nxG.add_node(node, group_id=0)
-
-
-def showGraph(nxG, title, arrows, node_size, edge_width, file_save_path):
+def show_graph(nxG, file_save_path, title, arrows, node_size, edge_width):
     """Generates the corresponding image based on the given DiGraph of networkx."""
 
     pos = nx.random_layout(nxG)
@@ -132,18 +111,3 @@ def showGraph(nxG, title, arrows, node_size, edge_width, file_save_path):
     plt.savefig(file_save_path + title + ".png")
     print("\nnumber of nodes:", nxG.number_of_nodes())
     print("number of edges:", nxG.number_of_edges())
-
-
-def toCsv(data, file_save_path):
-    data.to_csv(file_save_path + "nodes.csv")
-
-
-if __name__ == "__main__":
-    graph(
-        file_read_path="./rawdata/nodes.json",
-        file_save_path="./rawdata/",
-        title="first_graph",
-        arrows=False,
-        node_size=0.1,
-        edge_width=0.01,
-    )

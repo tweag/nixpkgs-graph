@@ -31,14 +31,16 @@ import click
 @click.option(
     "-e", "--edge-width", "edge_width", default=0.01, help="Line width of edges."
 )
-def generateGraph(file_read_path, file_save_path, title, arrows, node_size, edge_width):
-    graph(file_read_path, file_save_path, title, arrows, node_size, edge_width)
+def generate_graph(
+    file_read_path, file_save_path, title, arrows, node_size, edge_width
+):
     click.echo("\nThe graph will be generated from '%s' with :" % file_read_path)
     click.echo("- title: %s" % title)
     click.echo("- arrows: %s" % arrows)
     click.echo("- node size: %f" % node_size)
     click.echo("- edge width: %f" % edge_width)
     click.echo("\nThe final results will be saved in the folder '%s'." % file_save_path)
+    graph(file_read_path, file_save_path, title, arrows, node_size, edge_width)
 
 
-generateGraph()
+generate_graph()
