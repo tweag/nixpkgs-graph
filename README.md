@@ -89,8 +89,7 @@ The executable files of this project mainly includes `shell` files and `python` 
 
 * Nix
   ```sh
-  $ curl -L https://nixos.org/nix/
-  $ install | sh
+  $ curl -L https://nixos.org/nix/install | sh
   ```
 
 ### Installation
