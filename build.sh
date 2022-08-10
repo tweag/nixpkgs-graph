@@ -13,5 +13,5 @@ nix-shell shell.nix --run "
     python3 -m venv .venv;
     source .venv/bin/activate;
     pip install -e .;
-    python3 -m graph_eloi_wang.nixpkgs_graph;
+    python3 -m nixpkgs_graph;
 "

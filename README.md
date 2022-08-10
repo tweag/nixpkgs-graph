@@ -89,10 +89,16 @@ The executable files of this project mainly includes `shell` files and `python` 
 
 * Nix
   ```sh
-  curl -L https://nixos.org/nix/install | sh
+  $ curl -L https://nixos.org/nix/install | sh
   ```
 
 ### Installation
+All installation steps are integrated into the shell script, you just need:
+```sh
+$ ./build.sh
+```
+The following are details about the methods used.
+
 
 **1. Generate Database**
 
@@ -174,6 +180,18 @@ The `nixpkgs_graph.py` file contains the following steps:
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_ -->
+If you have previously run the `build.sh` file in installation step, then you can already see the data generated under the default parameters in the `rawdata/` folder. Here is how to set the parameters manually.
+
+Start by entering the specified virtual environment:
+```sh
+nix-shell shell.nix
+source .venv/bin/activate
+```
+You can run nixpkgs_graph as a package with the attributes you like:
+```sh
+python3 -m nixpkgs_graph [OPTIONS]
+``` 
+You can use `--help` flag to read the help information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
