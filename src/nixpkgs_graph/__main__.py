@@ -1,4 +1,5 @@
 from .nixpkgs_graph import graph
+from .nixpkgs_analysis import general_info
 import click
 
 
@@ -40,7 +41,8 @@ def generate_graph(
     click.echo("- node size: %f" % node_size)
     click.echo("- edge width: %f" % edge_width)
     click.echo("\nThe final results will be saved in the folder '%s'." % file_save_path)
-    graph(file_read_path, file_save_path, title, arrows, node_size, edge_width)
+    nxG = graph(file_read_path, file_save_path, title, arrows, node_size, edge_width)
+    general_info(nxG)
 
 
 generate_graph()
