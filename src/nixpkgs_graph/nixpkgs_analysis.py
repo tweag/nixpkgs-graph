@@ -4,10 +4,10 @@ import numpy as np
 
 def general_info(nxG: nx.DiGraph):
     """Generate the basic information of graph.
-    
+
     Args:
         nxG: A directed nixpkgs graph.
-    
+
     """
     print(nx.info(nxG))
     nmb_nodes = nxG.number_of_nodes()
