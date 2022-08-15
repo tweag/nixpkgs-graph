@@ -29,8 +29,3 @@ def general_info(nxG: nx.DiGraph):
     nxG0 = nxG.copy()
     nxG0.remove_nodes_from([i for item in nx.simple_cycles(nxG0) for i in item])
     print("\nThe longest path length:", nx.dag_longest_path_length(nxG0))
-
-
-if __name__ == "__main__":
-    nxG = nx.read_gexf("./rawdata/first_graph.gexf")
-    general_info(nxG)
