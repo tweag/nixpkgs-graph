@@ -28,7 +28,8 @@ def graph(file_read_path, file_save_path, title, arrows, node_size, edge_width):
 
     # Generates the group and group_id attribute.
     # The group assignment is based on the package to which the derivation belongs, like python3Packages.
-    data["group"] = data["package"].map(lambda x: x[1] if len(x) >= 3 else np.nan)
+    data["group"] = data["package"].map(lambda x: x[1] if len(x) >= 3 else "nixpkgs")
+
     data["group_id"] = data["group"].map(data["group"].unique().tolist().index)
 
     # Add nodes
@@ -44,17 +45,28 @@ def graph(file_read_path, file_save_path, title, arrows, node_size, edge_width):
     # Add edges
     for index, row in data.iterrows():
         for target in row["buildInputs"]:
-            nxG.add_edge(row["id"], target)
+            nxG.add_edge(row["id"], target, type="buildInputs")
+
+        for target in row["propagatedBuildInputs"]:
+            nxG.add_edge(row["id"], target, type="propagatedBuildInputs")
 
     # Complete data
     # Since we have not evaluated all the nodes successfully, all the targets involved in some edges are not in the node list. But they are still added to the graph, so we need to add group attribute for them.
+    id0 = data["group"].unique().tolist().index("nixpkgs")
     for node, attrs in nxG.nodes(data=True):
         if "group_id" not in attrs:
-            nxG.add_node(node, group_id=0)
+            nxG.add_node(node, group_id=id0)
+
+    # Remove a special error node ("") and all related edges
+    nxG.remove_node("")
 
     show_graph(nxG, file_save_path, title, arrows, node_size, edge_width)
 
     data.to_csv(file_save_path + "nodes.csv")
+
+    nx.write_gexf(nxG, file_save_path + title + ".gexf")
+
+    return nxG
 
 
 def pre_process(data: pd.DataFrame):
@@ -66,13 +78,20 @@ def pre_process(data: pd.DataFrame):
     )
 
     # Change the order of the columns
-    order = ["id", "pname", "version", "package", "buildInputs"]
+    order = [
+        "id",
+        "pname",
+        "version",
+        "package",
+        "buildInputs",
+        "propagatedBuildInputs",
+    ]
     data = data[order]
 
     # Split buildInputs
     df = data.copy()
     df["buildInputs"] = df["buildInputs"].apply(split_build)
-
+    df["propagatedBuildInputs"] = df["propagatedBuildInputs"].apply(split_build)
     return df
 
 
@@ -82,7 +101,9 @@ def split_build(x: str):
     # Some packages fails to evaluate their buildInputs so we may get "False".
     if type(x) == bool:
         return []
-
+    # If the (propagated) buildInputs was successfully evaluated but empty, the func should return [] but not [""]
+    # if x == "":
+    #     return []
     builds = x.strip().split(" ")
     # In order to extract the 'id' part from the 'buildInputs', the hash string part needs to be removed first (so start at 44).
     # Also part of derivations ends with "-dev", which also needs to be removed.
@@ -99,7 +120,16 @@ def show_graph(nxG, file_save_path, title, arrows, node_size, edge_width):
     # width then length, unit: 100 pixels
     plt.figure(figsize=(10, 10), dpi=300)
 
-    plt.title(title)
+    plt.title(
+        (
+            '"'
+            + title
+            + '" nodes: '
+            + str(nxG.number_of_nodes())
+            + " edges: "
+            + str(nxG.number_of_edges())
+        )
+    )
     nx.draw_networkx_nodes(
         nxG,
         pos=pos,
@@ -109,5 +139,3 @@ def show_graph(nxG, file_save_path, title, arrows, node_size, edge_width):
     )
     nx.draw_networkx_edges(nxG, pos=pos, arrows=arrows, width=edge_width)
     plt.savefig(file_save_path + title + ".png")
-    print("\nnumber of nodes:", nxG.number_of_nodes())
-    print("number of edges:", nxG.number_of_edges())
