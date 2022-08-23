@@ -1,4 +1,3 @@
-from email.policy import default
 from .nixpkgs_graph import graph
 from .nixpkgs_analysis import general_info
 import click

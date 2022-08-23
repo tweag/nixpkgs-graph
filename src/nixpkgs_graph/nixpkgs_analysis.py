@@ -1,4 +1,3 @@
-from itertools import cycle
 import networkx as nx
 import json
 
