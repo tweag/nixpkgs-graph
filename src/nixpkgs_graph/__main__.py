@@ -1,3 +1,4 @@
+from email.policy import default
 from .nixpkgs_graph import graph
 from .nixpkgs_analysis import general_info
 import click
@@ -32,17 +33,27 @@ import click
 @click.option(
     "-e", "--edge-width", "edge_width", default=0.01, help="Line width of edges."
 )
+@click.option(
+    "-m",
+    "--mode",
+    "mode",
+    default=2,
+    help="Select the type of edges to be added to the graph. 0: buildInputs, 1: promotedBuildInputs, 2: both.",
+)
 def generate_graph(
-    file_read_path, file_save_path, title, arrows, node_size, edge_width
+    file_read_path, file_save_path, title, arrows, node_size, edge_width, mode
 ):
     click.echo("\nThe graph will be generated from '%s' with :" % file_read_path)
     click.echo("- title: %s" % title)
     click.echo("- arrows: %s" % arrows)
     click.echo("- node size: %f" % node_size)
     click.echo("- edge width: %f" % edge_width)
+    click.echo("- mode: '%d'" % mode)
     click.echo("\nThe final results will be saved in the folder '%s'." % file_save_path)
-    nxG = graph(file_read_path, file_save_path, title, arrows, node_size, edge_width)
-    general_info(nxG)
+    nxG = graph(
+        file_read_path, file_save_path, title, arrows, node_size, edge_width, mode
+    )
+    general_info(nxG, file_save_path)
 
 
 generate_graph()
