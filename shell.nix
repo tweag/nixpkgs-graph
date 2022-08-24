@@ -2,8 +2,8 @@
 let
   my-python = pkgs.python3;
   my-pip = pkgs.python3Packages.pip;
-  pythonEnv = my-python.withPackages (p: with p;
-    [
+  pythonEnv = my-python.withPackages (p:
+    with p; [
       matplotlib
       networkx
       pandas
@@ -13,8 +13,7 @@ let
       setuptools
       # other python packages needed here
     ]);
-in
-pkgs.mkShell {
+in pkgs.mkShell {
   buildInputs = [
     pythonEnv
     my-pip

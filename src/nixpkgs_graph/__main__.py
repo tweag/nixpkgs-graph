@@ -1,6 +1,42 @@
 from .nixpkgs_graph import graph
 from .nixpkgs_analysis import general_info
 import click
+import subprocess
+
+
+@click.group()
+def cli():
+    pass
+
+
+@click.command()
+# FIXME commented because we have not yet implemented the ability to generate nixpkgs with commit.
+# @click.option("-c", "--commit", "commit", default="0000", help="The commit of nixpkgs to be used.")
+@click.option(
+    "-u",
+    "--url",
+    "pkgs_url",
+    default="https://github.com/NixOS/nixpkgs/archive/nixos-22.05.tar.gz",
+    help="The url link for fetchTarball to get nixpkgs.",
+)
+def build(pkgs_url):
+    subprocess.run(["mkdir", "-p", "rawdata"])
+    nix_result = subprocess.run(
+        [
+            "nix-instantiate",
+            "--eval",
+            "--json",
+            "--strict",
+            "--show-trace",
+            "default.nix",
+            "-A",
+            "info",
+            "--argstr",
+            "pkgs_url",
+            pkgs_url,
+        ]
+    )
+    return nix_result
 
 
 @click.command()
@@ -55,4 +91,7 @@ def generate_graph(
     general_info(nxG, file_save_path)
 
 
-generate_graph()
+cli.add_command(build)
+cli.add_command(generate_graph)
+
+cli()

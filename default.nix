@@ -1,10 +1,11 @@
-{ pkgs ? import
-  (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-22.05.tar.gz")
-  { } }:
+{ pkgs_url ? "https://github.com/NixOS/nixpkgs/archive/nixos-22.05.tar.gz"
+}:
 
-with pkgs;
+with pkgs_url;
 
 let
+  pkgs = import (fetchTarball pkgs_url) { };
+
   inherit (pkgs) lib;
 
   inherit (builtins) tryEval;
@@ -57,13 +58,15 @@ let
           # propagatedNativeBuildInputs = (tryEval (if value ? propagatedNativeBuildInputs then concatString value.propagatedNativeBuildInputs else "")).value;
         } else if ((value.recurseForDerivations or false
           || value.recurseForRelease or false) || ((builtins.typeOf value)
-            == "set" && builtins.elem name packages && depth < 1)) then
+          == "set" && builtins.elem name packages && depth < 1)) then
           extractInfo (depth + 1) (packagePath ++ [ name ]) value
         else
           null);
-      in if res.success then res.value else null);
+      in
+      if res.success then res.value else null);
 
-in rec {
+in
+rec {
   info = lib.collect (x: (x.type or null) == "node")
     (extractInfo 0 [ "nixpkgs" ] pkgs);
 }
