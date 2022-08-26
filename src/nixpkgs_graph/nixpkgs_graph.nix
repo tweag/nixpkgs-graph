@@ -1,15 +1,12 @@
 { pkgs_url # URL to the nixpkgs tarball
-, sha256   # sha256 of the nixpkgs tarball
+, sha256 # sha256 of the nixpkgs tarball
 }:
 
 let
-  pkgs =
-    (import
-      (fetchTarball {
-        url = pkgs_url;
-        inherit sha256;
-      })
-      { });
+  pkgs = (import (fetchTarball {
+    url = pkgs_url;
+    inherit sha256;
+  }) { });
 
   inherit (pkgs) lib;
 
@@ -63,15 +60,13 @@ let
           # propagatedNativeBuildInputs = (tryEval (if value ? propagatedNativeBuildInputs then concatString value.propagatedNativeBuildInputs else "")).value;
         } else if ((value.recurseForDerivations or false
           || value.recurseForRelease or false) || ((builtins.typeOf value)
-          == "set" && builtins.elem name packages && depth < 1)) then
+            == "set" && builtins.elem name packages && depth < 1)) then
           extractInfo (depth + 1) (packagePath ++ [ name ]) value
         else
           null);
-      in
-      if res.success then res.value else null);
+      in if res.success then res.value else null);
 
-in
-rec {
+in rec {
   info = lib.collect (x: (x.type or null) == "node")
     (extractInfo 0 [ "nixpkgs" ] pkgs);
 }

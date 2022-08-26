@@ -120,9 +120,7 @@ def generate_graph(
     click.echo(f"- mode: '{mode}'")
     click.echo()
     click.echo(f"The final results will be saved in the folder {output_folder}.")
-    nxG = graph(
-        input_file, output_folder, title, arrows, node_size, edge_width, mode
-    )
+    nxG = graph(input_file, output_folder, title, arrows, node_size, edge_width, mode)
     general_info(nxG, output_folder)
 
 

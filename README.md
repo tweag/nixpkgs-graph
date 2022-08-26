@@ -220,30 +220,18 @@ You can use `--help` flag to read the help information.
 
 3. To get the nixpkgs database in json format, you can use the following code:
   ```sh
-  python3 -m nixpkgs_graph build
+  python3 -m nixpkgs_graph build --rev 81f9b246d200205d8bafab48f3bd1aeb62d775b --sha256 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g
   ```
-  The default file save path is "./rawdata/nodes.json", you can change it using `-f` flag.
-  The default nixpkgs version is "https://github.com/NixOS/nixpkgs/archive/master.tar.gz". 
-
-
-4. If you want to specify a special version of nixpkgs. You can use [fetchTarball](https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs)  with `nixos-xx.xx` specify a NixOS version:
-  ```sh
-  python3 -m nixpkgs_graph build -r "nixos-22.05"
-  ``` 
-  Else you can use the full, 40-character SHA-1 hash of a commit with its SHA256 to choose the nixpkgs:
-  ```
-  python3 -m nixpkgs_graph build -r "59b5ae59892ff16075bab39a7d6a9c8509b4055f" -s "0c9yjk5spc8mkq5rqcql6j8mqmlq62299l3cz29pjvgxwazwwpv0"
-  ```
-  The [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) could be created using 
+  The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit. And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash. It could be created using 
   ```sh
   nix-prefetch-url --unpack "https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz"
   ```
-
-5. Then to generate the graph and do some basic analysis, use:
+  You can replace them with the version you like.
+4. Then to generate the graph and do some basic analysis, use:
   ```sh
-  python3 -m nixpkgs_graph generate-graph [ARGS]
-  ```
-  If you use the default command without any args, the corresponding csv files, png images, gexf graphs and josn analysis results will appear in the `./rawdata/` folder.
+  python3 -m nixpkgs_graph generate-graph --input-file InputFile "--output-folder" OutputFolder
+  ``` 
+  The input file should be the path to the result you get in step 3. And the output folder is used to store results.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -256,7 +244,8 @@ You can use `--help` flag to read the help information.
 - [x] Construct Database
 - [x] Construct Graph
 - [x] Analyse
-- [ ] CLI tool
+- [x] CLI tool
+- [ ] Get nixpkgs data to Neo4j
 
 <!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
 
