@@ -20,6 +20,14 @@ classifiers = [
     "License :: OSI Approved :: MIT License",
     "Operating System :: OS Independent",
 ]
+dependencies = [
+      "matplotlib",
+      "networkx",
+      "pandas",
+      "scipy",
+      "numpy",
+      "click",
+]
 
 [project.urls]
 "Homepage" = "https://github.com/tweag/nixpkgs-graph"
