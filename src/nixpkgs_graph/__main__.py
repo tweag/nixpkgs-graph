@@ -70,18 +70,23 @@ def build(rev: str, sha256: str, output: Optional[str]):
 
 @cli.command()
 @click.option(
-    "-r",
-    "--file-read-path",
-    "file_read_path",
-    default="./rawdata/nodes.json",
-    help="The path to read the json file of node information, default is './rawdata/nodes.json' ",
+    "--input-file",
+    "input_file",
+    required=True,
+    help="The path to the input json file with node information.",
 )
 @click.option(
-    "-f",
-    "--file-save-folder",
-    "file_save_folder",
-    default="./rawdata/",
-    help="The folder path used to store results, ending with /, default is './rawdata/'",
+    "--output-folder",
+    "output_folder",
+    required=True,
+    help="The folder path used to store results.",
+)
+@click.option(
+    "--mode",
+    "mode",
+    type=click.Choice(["buildInputs", "propagatedBuildInputs", "both"]),
+    default="both",
+    help="Select the type of edges to be added to the graph. Can be 'buildInputs', 'propagatedBuildInputs' or 'both'. Default is 'both'.",  # noqa: E501
 )
 @click.option(
     "-t", "--title", "title", default="first_graph", help="Title of the graph picture"
@@ -90,34 +95,35 @@ def build(rev: str, sha256: str, output: Optional[str]):
     "-a",
     "--arrows",
     "arrows",
-    default=False,
-    help="If True, draw arrowheads with FancyArrowPatches (bendable and stylish). If False, draw edges using LineCollection (linear and fast)",  # noqa: E501
+    is_flag=True,
+    help="When used, draw arrowheads with FancyArrowPatches (bendable and stylish), else draw edges using LineCollection (linear and fast)",  # noqa: E501
 )
 @click.option("-n", "--node-size", "node_size", default=0.1, help="Size of nodes.")
 @click.option(
     "-e", "--edge-width", "edge_width", default=0.01, help="Line width of edges."
 )
-@click.option(
-    "-m",
-    "--mode",
-    "mode",
-    default=2,
-    help="Select the type of edges to be added to the graph. 0: buildInputs, 1: promotedBuildInputs, 2: both.",  # noqa: E501
-)
 def generate_graph(
-    file_read_path, file_save_path, title, arrows, node_size, edge_width, mode
+    input_file: str,
+    output_folder: str,
+    mode: str,
+    title,
+    arrows,
+    node_size,
+    edge_width,
 ):
-    click.echo("\nThe graph will be generated from '%s' with :" % file_read_path)
-    click.echo("- title: %s" % title)
-    click.echo("- arrows: %s" % arrows)
-    click.echo("- node size: %f" % node_size)
-    click.echo("- edge width: %f" % edge_width)
-    click.echo("- mode: '%d'" % mode)
-    click.echo("\nThe final results will be saved in the folder '%s'." % file_save_path)
+    click.echo()
+    click.echo(f"The graph will be generated from '{input_file}' with :")
+    click.echo(f"- title: {title}")
+    click.echo(f"- arrows: {arrows}")
+    click.echo(f"- node size: {node_size}")
+    click.echo(f"- edge width: {edge_width}")
+    click.echo(f"- mode: '{mode}'")
+    click.echo()
+    click.echo(f"The final results will be saved in the folder {output_folder}.")
     nxG = graph(
-        file_read_path, file_save_path, title, arrows, node_size, edge_width, mode
+        input_file, output_folder, title, arrows, node_size, edge_width, mode
     )
-    general_info(nxG, file_save_path)
+    general_info(nxG, output_folder)
 
 
 cli()
