@@ -2,7 +2,7 @@ import networkx as nx
 import json
 
 
-def general_info(nxG: nx.DiGraph, file_save_path):
+def general_info(nxG: nx.DiGraph, file_save_folder):
     """Generate the basic information of graph.
 
     Args:
@@ -30,6 +30,6 @@ def general_info(nxG: nx.DiGraph, file_save_path):
     nxG0.remove_nodes_from([i for item in nx.simple_cycles(nxG0) for i in item])
     res["longest_chain_length"] = nx.dag_longest_path_length(nxG0)
 
-    fp = open(file_save_path + "general_info.json", "w")
+    fp = open(file_save_folder + "general_info.json", "w")
     print(json.dumps(res), file=fp)
     fp.close()

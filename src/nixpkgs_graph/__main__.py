@@ -9,20 +9,36 @@ def cli():
     pass
 
 
-@click.command()
+@cli.command()
 # FIXME commented because we have not yet implemented the ability to generate nixpkgs with commit.
 # @click.option("-c", "--commit", "commit", default="0000", help="The commit of nixpkgs to be used.")
 @click.option(
-    "-u",
-    "--url",
-    "pkgs_url",
-    default="https://github.com/NixOS/nixpkgs/archive/nixos-22.05.tar.gz",
-    help="The url link for fetchTarball to get nixpkgs.",
+    "-r",
+    "--revision",
+    "revision",
+    default="master",
+    help="The revision to create url link ('https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz') for fetchTarball to get nixpkgs. There are two options: nixos or commit. For nixos version you can use keywords like 'master', 'nixos-22.05'. And if u want to use a special commit of nixpkgs, use its full, 40-character SHA-1 hash.",
 )
-def build(pkgs_url):
+@click.option(
+    "-s",
+    "--sha",
+    "sha",
+    default="sha",
+    help='The corresponding SHA256 hash if you want to use a commit of nixpkgs. You can create it using \'$ nix-prefetch-url --unpack "https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz"',
+)
+@click.option(
+    "-f",
+    "--file-save-path",
+    "file_save_path",
+    default="./rawdata/nodes.json",
+    help="The file path used to store the result, ending with .json, default is './rawdata/nodes.json'",
+)
+def build(revision, sha, file_save_path):
     subprocess.run(["mkdir", "-p", "rawdata"])
+    url = "https://github.com/NixOS/nixpkgs/archive/" + revision + ".tar.gz"
+    f = open(file_save_path, "w")
     nix_result = subprocess.run(
-        [
+        args=[
             "nix-instantiate",
             "--eval",
             "--json",
@@ -33,13 +49,17 @@ def build(pkgs_url):
             "info",
             "--argstr",
             "pkgs_url",
-            pkgs_url,
-        ]
+            url,
+            "--argstr",
+            "sha",
+            sha,
+        ],
+        stdout=f,
+        stderr=subprocess.STDOUT,
     )
-    return nix_result
 
 
-@click.command()
+@cli.command()
 @click.option(
     "-r",
     "--file-read-path",
@@ -48,11 +68,11 @@ def build(pkgs_url):
     help="The path to read the json file of node information, default is './rawdata/nodes.json' ",
 )
 @click.option(
-    "-s",
-    "--file-save-path",
-    "file_save_path",
+    "-f",
+    "--file-save-folder",
+    "file_save_folder",
     default="./rawdata/",
-    help="The folder path used to store the graph picture, ending with /, default is be './rawdata/'",
+    help="The folder path used to store results, ending with /, default is './rawdata/'",
 )
 @click.option(
     "-t", "--title", "title", default="first_graph", help="Title of the graph picture"
@@ -90,8 +110,5 @@ def generate_graph(
     )
     general_info(nxG, file_save_path)
 
-
-cli.add_command(build)
-cli.add_command(generate_graph)
 
 cli()
