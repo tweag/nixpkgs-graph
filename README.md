@@ -105,8 +105,6 @@ The following are details about the methods used.
 
 **1. Generate Database**
 
-The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `nodes.json`.
-
 Each name/value pair in the json file represents a package under `nixpkgs`, and it contains the following information :
 - `id`: full name with version of the package under `nixpkgs`, 
 - `pname`
@@ -151,8 +149,6 @@ So, according to the `nodes.json` file we get the node and edge information at t
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 **2. Generate Graph**
-
-The procedures for generating graph have also been integrated into the `build.sh` file. The corresponding files will appear in the rawdata/ folder which are named `first_graph.png` & `nodes.csv`.
 
 For the first version of the graph, we used [pandas](https://pandas.pydata.org/) of python to process the json format data, and [networkx](https://networkx.org/) to build the graph. The entire program is contained in the `nixpkgs_nixpkgs_graph.py` file, and the corresponding `requirements.txt` file is provided. However, the python file will be run via `nix-shell` using the virtual environment `.venv`, so there is no need to use the user's native python interpreter. And there is no requirement for user's python environment.
 
@@ -245,11 +241,11 @@ You can use `--help` flag to read the help information.
 
 5. Then to generate the graph and do some basic analysis, use:
   ```sh
-  python3 -m nixpkgs_graph generate_graph [ARGS]
+  python3 -m nixpkgs_graph generate-graph [ARGS]
   ```
+  If you use the default command without any args, the corresponding csv files, png images, gexf graphs and josn analysis results will appear in the `./rawdata/` folder.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- ROADMAP -->
