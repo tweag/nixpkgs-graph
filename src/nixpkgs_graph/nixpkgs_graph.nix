@@ -1,11 +1,13 @@
-{ pkgs ? import
-    (fetchTarball "https://github.com/NixOS/nixpkgs/archive/nixos-22.05.tar.gz")
-    { }
+{ pkgs_url # URL to the nixpkgs tarball
+, sha256 # sha256 of the nixpkgs tarball
 }:
 
-with pkgs;
-
 let
+  pkgs = (import (fetchTarball {
+    url = pkgs_url;
+    inherit sha256;
+  }) { });
+
   inherit (pkgs) lib;
 
   inherit (builtins) tryEval;
@@ -53,20 +55,18 @@ let
               concatString value.propagatedBuildInputs
             else
               "")).value;
-          # FIXME commented because it does not evaluate, raises error XXXXX
+          # FIXME commented because it does not evaluate, raises error "attribute 'linux_py_27_cpu' missing"
           # nativeBuildInputs = (tryEval (if value ? nativeBuildInputs then concatString value.nativeBuildInputs else "")).value;
           # propagatedNativeBuildInputs = (tryEval (if value ? propagatedNativeBuildInputs then concatString value.propagatedNativeBuildInputs else "")).value;
         } else if ((value.recurseForDerivations or false
           || value.recurseForRelease or false) || ((builtins.typeOf value)
-          == "set" && builtins.elem name packages && depth < 1)) then
+            == "set" && builtins.elem name packages && depth < 1)) then
           extractInfo (depth + 1) (packagePath ++ [ name ]) value
         else
           null);
-      in
-      if res.success then res.value else null);
+      in if res.success then res.value else null);
 
-in
-rec {
+in rec {
   info = lib.collect (x: (x.type or null) == "node")
     (extractInfo 0 [ "nixpkgs" ] pkgs);
 }

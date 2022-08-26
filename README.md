@@ -93,16 +93,17 @@ The executable files of this project mainly includes `shell` files and `python` 
   ```
 
 ### Installation
-All installation steps are integrated into the shell script, you just need:
+A shell.nix file is provided to provision a shell environment with Python3 installed. Use the following command to enter the specified virtual environment:
 ```sh
-$ ./build.sh
+$ nix-shell shell.nix
+$ python3 -m venv .venv
+$ source .venv/bin/activate
+$ pip install -e .
 ```
 The following are details about the methods used.
 
 
 **1. Generate Database**
-
-The procedures for generating information about the nodes and edges have all been integrated into the `build.sh` file. The corresponding files will appear in the `rawdata/` folder which is named `nodes.json`.
 
 Each name/value pair in the json file represents a package under `nixpkgs`, and it contains the following information :
 - `id`: full name with version of the package under `nixpkgs`, 
@@ -148,8 +149,6 @@ So, according to the `nodes.json` file we get the node and edge information at t
 <p align="right">(<a href="#top">back to top</a>)</p>
 
 **2. Generate Graph**
-
-The procedures for generating graph have also been integrated into the `build.sh` file. The corresponding files will appear in the rawdata/ folder which are named `first_graph.png` & `nodes.csv`.
 
 For the first version of the graph, we used [pandas](https://pandas.pydata.org/) of python to process the json format data, and [networkx](https://networkx.org/) to build the graph. The entire program is contained in the `nixpkgs_nixpkgs_graph.py` file, and the corresponding `requirements.txt` file is provided. However, the python file will be run via `nix-shell` using the virtual environment `.venv`, so there is no need to use the user's native python interpreter. And there is no requirement for user's python environment.
 
@@ -204,21 +203,37 @@ This program will automatically generate `.gexf` format file and store it in the
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_ -->
-If you have previously run the `build.sh` file in installation step, then you can already see the data generated under the default parameters in the `rawdata/` folder. Here is how to set the parameters manually.
 
-Start by entering the specified virtual environment:
+You can skip step 1 if you have already executed the installation commands and have not exited the shell and venv environment.
+
+1. Start by entering the specified virtual environment:
 ```sh
 nix-shell shell.nix
 source .venv/bin/activate
 ```
-You can run nixpkgs_graph as a package with the attributes you like:
+
+2. You can run nixpkgs_graph as a package with the attributes you like:
 ```sh
-python3 -m nixpkgs_graph [OPTIONS]
+python3 -m nixpkgs_graph [OPTIONS] COMMAND [ARGS]
 ``` 
 You can use `--help` flag to read the help information.
 
-<p align="right">(<a href="#top">back to top</a>)</p>
+3. To get the nixpkgs database in json format, you can use the following code:
+  ```sh
+  python3 -m nixpkgs_graph build --rev 81f9b246d200205d8bafab48f3bd1aeb62d775b --sha256 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g
+  ```
+  The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit. And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash. It could be created using 
+  ```sh
+  nix-prefetch-url --unpack "https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz"
+  ```
+  You can replace them with the version you like.
+4. Then to generate the graph and do some basic analysis, use:
+  ```sh
+  python3 -m nixpkgs_graph generate-graph --input-file InputFile "--output-folder" OutputFolder
+  ``` 
+  The input file should be the path to the result you get in step 3. And the output folder is used to store results.
 
+<p align="right">(<a href="#top">back to top</a>)</p>
 
 
 <!-- ROADMAP -->
@@ -228,7 +243,9 @@ You can use `--help` flag to read the help information.
     - [x] Get edge information
 - [x] Construct Database
 - [x] Construct Graph
-- [ ] Analyse
+- [x] Analyse
+- [x] CLI tool
+- [ ] Get nixpkgs data to Neo4j
 
 <!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
 
