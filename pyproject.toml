@@ -1,5 +1,5 @@
 [build-system]
-requires = ["setuptools>=61.0"]
+requires = ["setuptools>=61.0", "setuptools_scm[toml]>=7.0.5"]
 build-backend = "setuptools.build_meta"
 
 [project]
@@ -32,3 +32,5 @@ dependencies = [
 [project.urls]
 "Homepage" = "https://github.com/tweag/nixpkgs-graph"
 "Bug Tracker" = "https://github.com/tweag/nixpkgs-graph/issues"
+
+[tool.setuptools_scm]
