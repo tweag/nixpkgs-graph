@@ -93,9 +93,12 @@ The executable files of this project mainly includes `shell` files and `python` 
   ```
 
 ### Installation
-All installation steps are integrated into the shell script, you just need:
+A shell.nix file is provided to provision a shell environment with Python3 installed. Use the following command to enter the specified virtual environment:
 ```sh
-$ ./build.sh
+$ nix-shell shell.nix
+$ python3 -m venv .venv
+$ source .venv/bin/activate
+$ pip install -e .
 ```
 The following are details about the methods used.
 
@@ -204,18 +207,46 @@ This program will automatically generate `.gexf` format file and store it in the
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
 
 _For more examples, please refer to the [Documentation](https://example.com)_ -->
-If you have previously run the `build.sh` file in installation step, then you can already see the data generated under the default parameters in the `rawdata/` folder. Here is how to set the parameters manually.
 
-Start by entering the specified virtual environment:
+You can skip step 1 if you have already executed the installation commands and have not exited the shell and venv environment.
+
+1. Start by entering the specified virtual environment:
 ```sh
 nix-shell shell.nix
 source .venv/bin/activate
 ```
-You can run nixpkgs_graph as a package with the attributes you like:
+
+2. You can run nixpkgs_graph as a package with the attributes you like:
 ```sh
-python3 -m nixpkgs_graph [OPTIONS]
+python3 -m nixpkgs_graph [OPTIONS] COMMAND [ARGS]
 ``` 
 You can use `--help` flag to read the help information.
+
+3. To get the nixpkgs database in json format, you can use the following code:
+  ```sh
+  python3 -m nixpkgs_graph build
+  ```
+  The default file save path is "./rawdata/nodes.json", you can change it using `-f` flag.
+  The default nixpkgs version is "https://github.com/NixOS/nixpkgs/archive/master.tar.gz". 
+
+
+4. If you want to specify a special version of nixpkgs. You can use [fetchTarball](https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs)  with `nixos-xx.xx` specify a NixOS version:
+  ```sh
+  python3 -m nixpkgs_graph build -r "nixos-22.05"
+  ``` 
+  Else you can use the full, 40-character SHA-1 hash of a commit with its SHA256 to choose the nixpkgs:
+  ```
+  python3 -m nixpkgs_graph build -r "59b5ae59892ff16075bab39a7d6a9c8509b4055f" -s "0c9yjk5spc8mkq5rqcql6j8mqmlq62299l3cz29pjvgxwazwwpv0"
+  ```
+  The [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) could be created using 
+  ```sh
+  nix-prefetch-url --unpack "https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz"
+  ```
+
+5. Then to generate the graph and do some basic analysis, use:
+  ```sh
+  python3 -m nixpkgs_graph generate_graph [ARGS]
+  ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -228,7 +259,8 @@ You can use `--help` flag to read the help information.
     - [x] Get edge information
 - [x] Construct Database
 - [x] Construct Graph
-- [ ] Analyse
+- [x] Analyse
+- [ ] CLI tool
 
 <!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
 
