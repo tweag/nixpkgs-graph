@@ -239,7 +239,7 @@ The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit
 4. Then to generate the graph and do some basic analysis, use:
 
 ```sh
-python3 -m nixpkgs_graph generate-graph --input-file InputFile "--output-folder" OutputFolder
+python3 -m nixpkgs_graph generate-graph --input-file INPUT_FILE --output-folder OUTPUT_FOLDER
 ``` 
 
 The input file should be the path to the result you get in step 3. And the output folder is used to store results.
