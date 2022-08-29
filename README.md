@@ -207,31 +207,72 @@ _For more examples, please refer to the [Documentation](https://example.com)_ --
 You can skip step 1 if you have already executed the installation commands and have not exited the shell and venv environment.
 
 1. Start by entering the specified virtual environment:
+
 ```sh
 nix-shell shell.nix
 source .venv/bin/activate
 ```
 
 2. You can run nixpkgs_graph as a package with the attributes you like:
+
 ```sh
 python3 -m nixpkgs_graph [OPTIONS] COMMAND [ARGS]
 ``` 
+
 You can use `--help` flag to read the help information.
 
 3. To get the nixpkgs database in json format, you can use the following code:
-  ```sh
-  python3 -m nixpkgs_graph build --rev 81f9b246d200205d8bafab48f3bd1aeb62d775b --sha256 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g
-  ```
-  The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit. And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash. It could be created using 
+
+```sh
+python3 -m nixpkgs_graph build --rev 481f9b246d200205d8bafab48f3bd1aeb62d775b --sha256 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g
+```
+
+The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit. And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash. It could be created using 
+
   ```sh
   nix-prefetch-url --unpack "https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz"
   ```
+
   You can replace them with the version you like.
+
+
 4. Then to generate the graph and do some basic analysis, use:
-  ```sh
-  python3 -m nixpkgs_graph generate-graph --input-file InputFile "--output-folder" OutputFolder
-  ``` 
-  The input file should be the path to the result you get in step 3. And the output folder is used to store results.
+
+```sh
+python3 -m nixpkgs_graph generate-graph --input-file INPUT_FILE --output-folder OUTPUT_FOLDER
+``` 
+
+The input file should be the path to the result you get in step 3. And the output folder is used to store results.
+
+5. Finally, here we provide the method to use [Neo4j](https://neo4j.com/) to access the graph.
+
+- The data in `.graphml` format has been generated in step 4 and you can find it in the folder specified by `--output-folder` flag.
+
+- In order to use Neo4j to read data in `.graphml` format, you will need to install a plugin called `APOC` from [here](https://neo4j.com/labs/apoc/4.4/installation/).
+
+- Then enable `apoc.import.file.enabled=true` in `neo4j.conf`.
+
+- Now place the `<filename>.graphml` in the `import/` folder of Neo4j and use `APOC` to import it:
+  
+  ```
+  cypher-shell -a bolt://localhost:7687 "call apoc.import.graphml('<filename>.graphml', {})"
+  ```
+  Or in browser:
+  
+  ```
+  call apoc.import.graphml('<filename>.graphml', {})
+  ```
+- Now you can use some simple commands to test if the graph is successfully imported, like:
+
+  ```
+  cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN n LIMIT 10;"
+  ```
+
+  Or
+
+  ```
+  cypher-shell -a bolt://localhost:7687 "MATCH (p)-[]->(o) RETURN p.pname, o.pname LIMIT 10;"
+  ```
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -245,7 +286,7 @@ You can use `--help` flag to read the help information.
 - [x] Construct Graph
 - [x] Analyse
 - [x] CLI tool
-- [ ] Get nixpkgs data to Neo4j
+- [x] Get nixpkgs data to Neo4j
 
 <!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
 
