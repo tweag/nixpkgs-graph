@@ -80,7 +80,7 @@ def graph(
     os.makedirs(file_save_folder, exist_ok=True)
     data.to_csv(Path(file_save_folder).joinpath("nodes.csv"))
     nx.write_gexf(nxG, Path(file_save_folder).joinpath(f"{title}.gexf"))
-
+    nx.write_graphml(nxG, Path(file_save_folder).joinpath(f"{title}.graphml"))
     print(nx.info(nxG))
 
     return nxG
