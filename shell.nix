@@ -29,6 +29,7 @@ in pkgs.mkShell {
     wget -P $NEO4J_HOME/share/neo4j/plugins/ -nc https://github.com/neo4j-contrib/neo4j-apoc-procedures/releases/download/4.4.0.1/apoc-4.4.0.1-all.jar
     echo "apoc.import.file.enabled=true" >> $NEO4J_HOME/share/neo4j/conf/neo4j.conf
     echo "dbms.security.auth_enabled=false" >> $NEO4J_HOME/share/neo4j/conf/neo4j.conf
+    neo4j start
     # maybe set more env-vars
   '';
 }
