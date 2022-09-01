@@ -12,8 +12,6 @@
     <a href="LINK FOR BLOG HERE"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="LINK FOR DEMO HERE">View Demo</a>
-    ·
     <a href="https://github.com/tweag/nixpkgs-graph/issues">Report Bug</a>
     ·
     <a href="https://github.com/tweag/nixpkgs-graph/issues">Request Feature</a>
@@ -221,7 +219,7 @@ Eloi Xuan WANG - [@GearlessJohn](https://github.com/GearlessJohn) - eloi.wang@tw
 
 Guillaume Desforges - [@GuillaumeDesforges](https://github.com/GuillaumeDesforges) - guillaume.desforges@tweag.io
 
-Project Link: [https://https://github.com/tweag/nixpkgs-graph](https://https://github.com/tweag/nixpkgs-graph)
+Project Link: [https://github.com/tweag/nixpkgs-graph](https://github.com/tweag/nixpkgs-graph)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
