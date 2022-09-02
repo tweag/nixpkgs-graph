@@ -6,17 +6,12 @@
   <a href="https://github.com/tweag/nixpkgs-graph">
      <h1 align="center">Nixpkgs-Graph</h1>
   </a>
-
-
-
   <p align="center">
     A nixpkgs content database with graph building!
     <br />
     <a href="LINK FOR BLOG HERE"><strong>Explore the docs »</strong></a>
     <br />
     <br />
-    <a href="LINK FOR DEMO HERE">View Demo</a>
-    ·
     <a href="https://github.com/tweag/nixpkgs-graph/issues">Report Bug</a>
     ·
     <a href="https://github.com/tweag/nixpkgs-graph/issues">Request Feature</a>
@@ -48,6 +43,7 @@
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
+    <li><a href="#appendix">Appendix</a></li>
   </ol>
 </details>
 
@@ -60,17 +56,13 @@
 
 The main purpose of this project will be to extract the nodes and edge relationships from nixpkgs to build a database. Then generate graph based on this datebase.
 
-
 Here's why:
 * Nixpkgs contains more than forty thousand software packages, covering a very wide range. So as a database for studying the relationships between software packages, nixpkgs is excellent.
 * As computer technology continues to accumulate, the issue of software ecology is growing in importance. Constructing visual images through dependencies between software packages can show some macro features.
 
-
 Use the `README.md` to get started.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
-
-
 
 ### Built With
 
@@ -85,23 +77,173 @@ This section list the major frameworks/libraries used to bootstrap the project.
 
 ### Prerequisites
 
-The executable files of this project mainly includes `shell` files and `python` files. where the python file is run independently via nix-shell. Therefore, there is no requirement for the python interpreter in the user's environment, just install `Nix`.
-
 * Nix
-  ```sh
-  $ curl -L https://nixos.org/nix/install | sh
-  ```
+
+The executable files of this project mainly includes `nix` files and `python` files. where the python file is run independently via nix-shell. Therefore, there is no requirement for the python interpreter or other softwares in the user's environment, just install `Nix`.
+```sh
+$ curl -L https://nixos.org/nix/install | sh
+```
 
 ### Installation
-A shell.nix file is provided to provision a shell environment with Python3 installed. Use the following command to enter the specified virtual environment:
-```sh
-$ nix-shell shell.nix
-$ python3 -m venv .venv
-$ source .venv/bin/activate
-$ pip install -e .
-```
-The following are details about the methods used.
 
+A build.sh file is provided to implement all the required installation steps, so you just need to run:
+```sh
+./build.sh 481f9b246d200205d8bafab48f3bd1aeb62d775b 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g 
+```
+where the first argument is the revision (the 40-character SHA-1 hash) of a commit and the second is the [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of the commit. You can replace them by the commit you want to use.
+
+<!-- USAGE EXAMPLES -->
+## Usage
+
+<!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources. -->
+
+### Default mode
+After installation, if you just want to follow the default mode to get the data, then after running the `build.sh`, you will find in the `./rawdata/` folder:
+
+- `nodes.json`, raw data we extracted from nixpkgs
+- `nodes.csv`, data after we have processed the json file using pandas
+- `first_graph.png`, image drawn with networkx
+- `first_graph.gexf`, data to be input if you want to use Gephi
+- `first_graph.grapgml`, data to be input if you want to use Neo4j
+- `general_info.json`, file containing some basic information (number of nodes, number of edges, etc) about nixpkgs graph
+
+And if you want to query the graph with Neo4j, a `shell.nix` is provided:
+```sh
+nix-shell shell.nix
+```
+After that you can use the Cypher language to query, like:
+```sh
+cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN COUNT(n) as number_of_nodes;"
+```
+[Cypher Shell](https://neo4j.com/docs/operations-manual/current/tools/cypher-shell/) is a command-line tool that comes with the Neo4j distribution.
+
+### Manual mode
+
+If you want to **manually** adjust some parameters (e.g. output folder), you can use the following steps. 
+
+1. Start by entering the specified virtual environment:
+```sh
+nix-shell shell.nix
+source .venv/bin/activate
+```
+
+2. You can run `nixpkgs_graph` as a package with the attributes you like:
+```sh
+python3 -m nixpkgs_graph [OPTIONS] COMMAND [ARGS]
+``` 
+You can use `--help` flag to read the help information.
+
+3. To get the nixpkgs database in json format, you can use the following code:
+```sh
+python3 -m nixpkgs_graph build --rev 481f9b246d200205d8bafab48f3bd1aeb62d775b --sha256 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g
+```
+The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit. And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash. You can replace them with the version you like.
+
+4. Then to generate the graph and do some basic analysis, use:
+```sh
+python3 -m nixpkgs_graph generate-graph --input-file INPUT_FILE --output-folder OUTPUT_FOLDER
+``` 
+The input file should be the path to the result you get in step 3. And the output folder is used to store results.
+
+5. Finally, here we provide the method to use Neo4j to access the graph.
+
+- You can find the `.graphml` format file in the output folder. Please copy it to the import folder of Neo4j `$NEO4J_HOME/share/neo4j/import/`.
+
+- Now let's clear the original graph to avoid duplication:
+  ```sh
+  cypher-shell -a bolt://localhost:7687 "MATCH (n) DETACH DELETE n;"
+  ```
+
+- Now use `APOC` to import it:
+  ```sh
+  cypher-shell -a bolt://localhost:7687 "call apoc.import.graphml('<filename>.graphml', {})"
+  ```
+  Or in Neo4j browser if you use desktop version:
+  ```sh
+  call apoc.import.graphml('<filename>.graphml', {})
+  ```
+
+- Now you can use some simple commands to test if the graph is successfully imported, like:
+  ```sh
+  cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN n LIMIT 10;"
+  ```
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- ROADMAP -->
+## Roadmap
+- [x] Get basic information
+    - [x] Get node information
+    - [x] Get edge information
+- [x] Construct Database
+- [x] Construct Graph
+- [x] Analyse
+- [x] CLI tool
+- [x] Get nixpkgs data to Neo4j
+
+<!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- CONTRIBUTING -->
+## Contributing
+
+<!-- Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
+Don't forget to give the project a star! Thanks again!
+
+1. Fork the Project
+2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the Branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request -->
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+
+<!-- LICENSE -->
+## License
+
+<!-- Distributed under the MIT License. See `LICENSE.txt` for more information. -->
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+
+<!-- CONTACT -->
+## Contact
+
+Eloi Xuan WANG - [@GearlessJohn](https://github.com/GearlessJohn) - eloi.wang@tweag.io
+
+Guillaume Desforges - [@GuillaumeDesforges](https://github.com/GuillaumeDesforges) - guillaume.desforges@tweag.io
+
+Project Link: [https://github.com/tweag/nixpkgs-graph](https://github.com/tweag/nixpkgs-graph)
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+<!-- ACKNOWLEDGMENTS -->
+## Acknowledgments
+
+<!-- Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
+
+* [Choose an Open Source License](https://choosealicense.com)
+* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
+* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
+* [Malven's Grid Cheatsheet](https://grid.malven.co/)
+* [Img Shields](https://shields.io)
+* [GitHub Pages](https://pages.github.com)
+* [Font Awesome](https://fontawesome.com)
+* [React Icons](https://react-icons.github.io/react-icons/search) -->
+
+<p align="right">(<a href="#top">back to top</a>)</p>
+
+
+<!-- APPENDIX -->
+## Appendix
+
+The following are details about the methods used.
 
 **1. Generate Database**
 
@@ -182,7 +324,7 @@ The analysis of graph mainly includes two parts: one is the analysis of data bas
 
 ***Data Analysis***
 
-You can use the networkx.read_gexf() function to read the .gexf file to process the data of the networkx.DiGraph structure by yourself. This project provides some basic infomatation:
+You can use the `networkx.read_gexf()` function to read the .gexf file to process the data of the networkx.DiGraph structure by yourself. This project provides some basic infomatation:
 
 - number of nodes
 - number of edges
@@ -195,157 +337,3 @@ You can use the networkx.read_gexf() function to read the .gexf file to process 
 ***Visual Analysis***
 
 This program will automatically generate `.gexf` format file and store it in the `rawdata/` folder by default. Users can use `Gephi` to read and process the data for visualization.
-
-
-<!-- USAGE EXAMPLES -->
-## Usage
-
-<!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources.
-
-_For more examples, please refer to the [Documentation](https://example.com)_ -->
-
-You can skip step 1 if you have already executed the installation commands and have not exited the shell and venv environment.
-
-1. Start by entering the specified virtual environment:
-
-```sh
-nix-shell shell.nix
-source .venv/bin/activate
-```
-
-2. You can run nixpkgs_graph as a package with the attributes you like:
-
-```sh
-python3 -m nixpkgs_graph [OPTIONS] COMMAND [ARGS]
-``` 
-
-You can use `--help` flag to read the help information.
-
-3. To get the nixpkgs database in json format, you can use the following code:
-
-```sh
-python3 -m nixpkgs_graph build --rev 481f9b246d200205d8bafab48f3bd1aeb62d775b --sha256 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g
-```
-
-The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit. And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash. It could be created using 
-
-  ```sh
-  nix-prefetch-url --unpack "https://github.com/NixOS/nixpkgs/archive/${REVISION}.tar.gz"
-  ```
-
-  You can replace them with the version you like.
-
-
-4. Then to generate the graph and do some basic analysis, use:
-
-```sh
-python3 -m nixpkgs_graph generate-graph --input-file INPUT_FILE --output-folder OUTPUT_FOLDER
-``` 
-
-The input file should be the path to the result you get in step 3. And the output folder is used to store results.
-
-5. Finally, here we provide the method to use [Neo4j](https://neo4j.com/) to access the graph.
-
-- The data in `.graphml` format has been generated in step 4 and you can find it in the folder specified by `--output-folder` flag.
-
-- In order to use Neo4j to read data in `.graphml` format, you will need to install a plugin called `APOC` from [here](https://neo4j.com/labs/apoc/4.4/installation/).
-
-- Then enable `apoc.import.file.enabled=true` in `neo4j.conf`.
-
-- Now place the `<filename>.graphml` in the `import/` folder of Neo4j and use `APOC` to import it:
-  
-  ```
-  cypher-shell -a bolt://localhost:7687 "call apoc.import.graphml('<filename>.graphml', {})"
-  ```
-  Or in browser:
-  
-  ```
-  call apoc.import.graphml('<filename>.graphml', {})
-  ```
-- Now you can use some simple commands to test if the graph is successfully imported, like:
-
-  ```
-  cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN n LIMIT 10;"
-  ```
-
-  Or
-
-  ```
-  cypher-shell -a bolt://localhost:7687 "MATCH (p)-[]->(o) RETURN p.pname, o.pname LIMIT 10;"
-  ```
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-<!-- ROADMAP -->
-## Roadmap
-- [x] Get basic information
-    - [x] Get node information
-    - [x] Get edge information
-- [x] Construct Database
-- [x] Construct Graph
-- [x] Analyse
-- [x] CLI tool
-- [x] Get nixpkgs data to Neo4j
-
-<!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-<!-- Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request -->
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- LICENSE -->
-## License
-
-<!-- Distributed under the MIT License. See `LICENSE.txt` for more information. -->
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- CONTACT -->
-## Contact
-
-Eloi Xuan WANG - [@GearlessJohn](https://github.com/GearlessJohn) - eloi.wang@tweag.io
-
-Guillaume Desforges - [@GuillaumeDesforges](https://github.com/GuillaumeDesforges) - guillaume.desforges@tweag.io
-
-Project Link: [https://https://github.com/tweag/nixpkgs-graph](https://https://github.com/tweag/nixpkgs-graph)
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
-<!-- ACKNOWLEDGMENTS -->
-## Acknowledgments
-
-<!-- Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search) -->
-
-<p align="right">(<a href="#top">back to top</a>)</p>

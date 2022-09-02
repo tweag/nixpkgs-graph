@@ -1,3 +1,4 @@
+from pathlib import Path
 import networkx as nx
 import json
 
@@ -30,6 +31,6 @@ def general_info(nxG: nx.DiGraph, file_save_folder):
     nxG0.remove_nodes_from([i for item in nx.simple_cycles(nxG0) for i in item])
     res["longest_chain_length"] = nx.dag_longest_path_length(nxG0)
 
-    fp = open(file_save_folder + "general_info.json", "w")
+    fp = open(Path(file_save_folder).joinpath("general_info.json"), "w")
     print(json.dumps(res), file=fp)
     fp.close()
