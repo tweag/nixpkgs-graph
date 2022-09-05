@@ -86,11 +86,10 @@ $ curl -L https://nixos.org/nix/install | sh
 
 ### Installation
 
-A build.sh file is provided to implement all the required installation steps, so you just need to run:
+A `shell.nix` file is provided to implement all the required installation steps, so you just need to run:
 ```sh
-./build.sh 481f9b246d200205d8bafab48f3bd1aeb62d775b 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g 
+$ nix-shell
 ```
-where the first argument is the revision (the 40-character SHA-1 hash) of a commit and the second is the [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of the commit. You can replace them by the commit you want to use.
 
 <!-- USAGE EXAMPLES -->
 ## Usage
@@ -98,24 +97,28 @@ where the first argument is the revision (the 40-character SHA-1 hash) of a comm
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources. -->
 
 ### Default mode
-After installation, if you just want to follow the default mode to get the data, then after running the `build.sh`, you will find in the `./rawdata/` folder:
+After installation, if you just want to follow the default mode to get the data, then after running `nix-shell`, you will find in the `./rawdata/` folder:
 
 - `nodes.json`, raw data we extracted from nixpkgs
 - `nodes.csv`, data after we have processed the json file using pandas
 - `first_graph.png`, image drawn with networkx
 - `first_graph.gexf`, data to be input if you want to use Gephi
+- `start.grapgml`, special file used to start Neo4j
 - `first_graph.grapgml`, data to be input if you want to use Neo4j
 - `general_info.json`, file containing some basic information (number of nodes, number of edges, etc) about nixpkgs graph
 
-And if you want to query the graph with Neo4j, a `shell.nix` is provided:
-```sh
-nix-shell shell.nix
-```
 After that you can use the Cypher language to query, like:
 ```sh
-cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN COUNT(n) as number_of_nodes;"
+cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN n LIMIT 10;"
 ```
 [Cypher Shell](https://neo4j.com/docs/operations-manual/current/tools/cypher-shell/) is a command-line tool that comes with the Neo4j distribution.
+
+In particular, if you want to specify the version of nixpkgs, you can use the following two parameters:
+```sh
+nix-shell --argstr rev <REVISION> --argstr sha256 <SHA256>
+```
+where the first argument is the revision (the 40-character SHA-1 hash) of a commit and the second is the [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of the commit. You can replace them by the commit you want to use.
+
 
 ### Manual mode
 
@@ -124,7 +127,6 @@ If you want to **manually** adjust some parameters (e.g. output folder), you can
 1. Start by entering the specified virtual environment:
 ```sh
 nix-shell shell.nix
-source .venv/bin/activate
 ```
 
 2. You can run `nixpkgs_graph` as a package with the attributes you like:
