@@ -103,8 +103,8 @@ After installation, if you just want to follow the default mode to get the data,
 - `nodes.csv`, data after we have processed the json file using pandas
 - `first_graph.png`, image drawn with networkx
 - `first_graph.gexf`, data to be input if you want to use Gephi
-- `start.grapgml`, special file used to start Neo4j
-- `first_graph.grapgml`, data to be input if you want to use Neo4j
+- `start.graphml`, special file used to start Neo4j
+- `first_graph.graphml`, data to be input if you want to use Neo4j
 - `general_info.json`, file containing some basic information (number of nodes, number of edges, etc) about nixpkgs graph
 
 After that you can use the Cypher language to query, like:
@@ -126,7 +126,7 @@ If you want to **manually** adjust some parameters (e.g. output folder), you can
 
 1. Start by entering the specified virtual environment:
 ```sh
-nix-shell shell.nix
+nix-shell
 ```
 
 2. You can run `nixpkgs_graph` as a package with the attributes you like:
