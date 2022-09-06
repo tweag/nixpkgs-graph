@@ -34,7 +34,6 @@
       <a href="#getting-started">Getting Started</a>
       <ul>
         <li><a href="#prerequisites">Prerequisites</a></li>
-        <li><a href="#installation">Installation</a></li>
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
@@ -84,20 +83,17 @@ The executable files of this project mainly includes `nix` files and `python` fi
 $ curl -L https://nixos.org/nix/install | sh
 ```
 
-### Installation
-
-A `shell.nix` file is provided to implement all the required installation steps, so you just need to run:
-```sh
-$ nix-shell
-```
-
 <!-- USAGE EXAMPLES -->
 ## Usage
 
 <!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources. -->
 
 ### Default mode
-After installation, if you just want to follow the default mode to get the data, then after running `nix-shell`, you will find in the `./rawdata/` folder:
+If you just want to follow the default mode to get the data, you just need to run
+```sh
+nix-shell
+```
+Then you will find in the `./rawdata/` folder:
 
 - `nodes.json`, raw data we extracted from nixpkgs
 - `nodes.csv`, data after we have processed the json file using pandas
