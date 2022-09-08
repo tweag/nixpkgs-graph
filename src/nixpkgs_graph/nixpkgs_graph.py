@@ -83,6 +83,11 @@ def graph(
     nx.write_graphml(nxG, Path(file_save_folder).joinpath(f"{title}.graphml"))
     print(nx.info(nxG))
 
+    # Create a special graph to start Neo4j
+    nxS = nx.DiGraph()
+    nxS.add_node("start")
+    nx.write_graphml(nxS, Path(file_save_folder).joinpath("start.graphml"))
+
     return nxG
 
 

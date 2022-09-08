@@ -9,7 +9,7 @@
   <p align="center">
     A nixpkgs content database with graph building!
     <br />
-    <a href="LINK FOR BLOG HERE"><strong>Explore the docs »</strong></a>
+    <a href="https://www.tweag.io/blog/"><strong>Explore the docs »</strong></a>
     <br />
     <br />
     <a href="https://github.com/tweag/nixpkgs-graph/issues">Report Bug</a>
@@ -38,8 +38,6 @@
       </ul>
     </li>
     <li><a href="#usage">Usage</a></li>
-    <li><a href="#roadmap">Roadmap</a></li>
-    <li><a href="#contributing">Contributing</a></li>
     <li><a href="#license">License</a></li>
     <li><a href="#contact">Contact</a></li>
     <li><a href="#acknowledgments">Acknowledgments</a></li>
@@ -52,13 +50,11 @@
 <!-- ABOUT THE PROJECT -->
 ## About Nixpkgs-Graph
 
-`Nix` is a package manager that utilizes a purely functional deployment model which advertises more reliable, reproducible, and portable packages. And `nixpkgs` is a collection of software packages that can be installed with the Nix package manager.
+Nix is a package manager with a focus on reproducible, declarative and reliable packages. Nixpkgs is an enormous collection of software packages that can be installed with the Nix package manager. Due to the way Nix works, all packages must define precisely all of their dependencies (their dependency closure) down to the operating system's kernel. This rigor-by-design with respect to dependencies is what makes Nix packages highly reproducible, and as a side effect, it gives us a fantastic dataset: the full dependency network that the more than 80000 packages in this collection form.
 
-The main purpose of this project will be to extract the nodes and edge relationships from nixpkgs to build a database. Then generate graph based on this datebase.
+The interdependence between software packages forms a very complex network. Seemingly insignificant programs maintained by only a handful of people may be the pillar of applications we use every day. Looking at the dependency graph of software allows us to identify such libraries or programs. As a software collection that is used to build a complete operating system, Nixpkgs is not limited to an ecosystem and contains packages for many languages and programs. Its dependency graph can help us understand the relationship between different software ecosystems and capture some macro features that they have.
 
-Here's why:
-* Nixpkgs contains more than forty thousand software packages, covering a very wide range. So as a database for studying the relationships between software packages, nixpkgs is excellent.
-* As computer technology continues to accumulate, the issue of software ecology is growing in importance. Constructing visual images through dependencies between software packages can show some macro features.
+The main purpose of this project is to provide a CLI tool that simplifies the extraction of derivations (Nix' name for packages) and their dependencies programmatically from nixpkgs, and injecting them as nodes and edges in a graph database for further examination.
 
 Use the `README.md` to get started.
 
@@ -69,6 +65,7 @@ Use the `README.md` to get started.
 This section list the major frameworks/libraries used to bootstrap the project. 
 
 * [Nix](https://https://nixos.org/)
+* Python3
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -84,18 +81,22 @@ The executable files of this project mainly includes `nix` files and `python` fi
 $ curl -L https://nixos.org/nix/install | sh
 ```
 
+* Python3
+
+The nix shell does not provide a stable version of `Python3`, so the user will need to install a version of `Python3` above 3.8. In addition, the user will need to install `pip`.
+
+
 ### Installation
 
 A build.sh file is provided to implement all the required installation steps, so you just need to run:
 ```sh
-./build.sh 481f9b246d200205d8bafab48f3bd1aeb62d775b 0n6a4a439md42dqzzbk49rfxfrf3lx3438i2w262pnwbi3dws72g 
+./build.sh
 ```
-where the first argument is the revision (the 40-character SHA-1 hash) of a commit and the second is the [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of the commit. You can replace them by the commit you want to use.
+
+
 
 <!-- USAGE EXAMPLES -->
 ## Usage
-
-<!-- Use this space to show useful examples of how a project can be used. Additional screenshots, code examples and demos work well in this space. You may also link to more resources. -->
 
 ### Default mode
 After installation, if you just want to follow the default mode to get the data, then after running the `build.sh`, you will find in the `./rawdata/` folder:
@@ -117,6 +118,11 @@ cypher-shell -a bolt://localhost:7687 "MATCH (n) RETURN COUNT(n) as number_of_no
 ```
 [Cypher Shell](https://neo4j.com/docs/operations-manual/current/tools/cypher-shell/) is a command-line tool that comes with the Neo4j distribution.
 
+In particular, if you want to specify the version of nixpkgs, you can use the following two parameters:
+```sh
+./build.sh <REVISION> <SHA256>
+```
+where the first argument is the revision (the 40-character SHA-1 hash) of a commit and the second is the [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of the commit. You can replace them by the commit you want to use.
 ### Manual mode
 
 If you want to **manually** adjust some parameters (e.g. output folder), you can use the following steps. 
@@ -170,43 +176,12 @@ The input file should be the path to the result you get in step 3. And the outpu
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
-<!-- ROADMAP -->
-## Roadmap
-- [x] Get basic information
-    - [x] Get node information
-    - [x] Get edge information
-- [x] Construct Database
-- [x] Construct Graph
-- [x] Analyse
-- [x] CLI tool
-- [x] Get nixpkgs data to Neo4j
-
-<!-- See the [open issues](https://github.com/othneildrew/Best-README-Template/issues) for a full list of proposed features (and known issues). -->
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-<!-- CONTRIBUTING -->
-## Contributing
-
-<!-- Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
-
-If you have a suggestion that would make this better, please fork the repo and create a pull request. You can also simply open an issue with the tag "enhancement".
-Don't forget to give the project a star! Thanks again!
-
-1. Fork the Project
-2. Create your Feature Branch (`git checkout -b feature/AmazingFeature`)
-3. Commit your Changes (`git commit -m 'Add some AmazingFeature'`)
-4. Push to the Branch (`git push origin feature/AmazingFeature`)
-5. Open a Pull Request -->
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
 
 
 <!-- LICENSE -->
 ## License
 
-<!-- Distributed under the MIT License. See `LICENSE.txt` for more information. -->
+Distributed under the MIT License. See `LICENSE` for more information.
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
@@ -223,21 +198,18 @@ Project Link: [https://github.com/tweag/nixpkgs-graph](https://github.com/tweag/
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
+
+
 <!-- ACKNOWLEDGMENTS -->
 ## Acknowledgments
 
-<!-- Use this space to list resources you find helpful and would like to give credit to. I've included a few of my favorites to kick things off!
-
-* [Choose an Open Source License](https://choosealicense.com)
-* [GitHub Emoji Cheat Sheet](https://www.webpagefx.com/tools/emoji-cheat-sheet)
-* [Malven's Flexbox Cheatsheet](https://flexbox.malven.co/)
-* [Malven's Grid Cheatsheet](https://grid.malven.co/)
-* [Img Shields](https://shields.io)
-* [GitHub Pages](https://pages.github.com)
-* [Font Awesome](https://fontawesome.com)
-* [React Icons](https://react-icons.github.io/react-icons/search) -->
+* [MAPPING A UNIVERSE OF OPEN SOURCE SOFTWARE](https://www.tweag.io/blog/2019-02-06-mapping-open-source/)
+* [Pinning Nixpkgs](https://nixos.wiki/wiki/FAQ/Pinning_Nixpkgs)
+* [Query Json File](https://stedolan.github.io/jq/)
+* [Cypher Shell](https://neo4j.com/docs/operations-manual/current/tools/cypher-shell/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
+
 
 
 <!-- APPENDIX -->
