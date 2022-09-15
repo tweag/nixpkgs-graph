@@ -7,10 +7,7 @@
      <h1 align="center">Nixpkgs-Graph</h1>
   </a>
   <p align="center">
-    A nixpkgs content database with graph building!
-    <br />
-    <a href="LINK FOR BLOG HERE"><strong>Explore the docs »</strong></a>
-    <br />
+    A nixpkgs content database with graph building
     <br />
     <a href="https://github.com/tweag/nixpkgs-graph/issues">Report Bug</a>
     ·
