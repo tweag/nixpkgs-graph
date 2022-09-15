@@ -65,7 +65,7 @@ Use the `README.md` to get started.
 
 This section list the major frameworks/libraries used to bootstrap the project. 
 
-* [Nix](https://https://nixos.org/)
+* [Nix](https://nixos.org/)
 
 <p align="right">(<a href="#top">back to top</a>)</p>
 
