@@ -22,7 +22,7 @@ Read more on our blog post: ["Construction and analysis of the build and runtime
 where
 
 * the first argument is the revision (the 40-character SHA-1 hash) of a commit
-* the second is the [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of its content (same as `nix-prefetch-url --unpack`).
+* the second is the [SHA256](https://wiki.nixos.org/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash of its content (same as `nix-prefetch-url --unpack`).
 
 After running this script you will find in the `./rawdata/` folder:
 
@@ -62,7 +62,7 @@ $ nix-shell
    ```
    
    The `-rev` flag means revision, which is the 40-character SHA-1 hash of a commit.
-   And `-sha256` is its [SHA256](https://nixos.wiki/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash.
+   And `-sha256` is its [SHA256](https://wiki.nixos.org/wiki/How_to_fetch_Nixpkgs_with_an_empty_NIX_PATH) hash.
 
 3. Generate the graph and do some basic analysis:
    
